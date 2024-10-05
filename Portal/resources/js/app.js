@@ -4,8 +4,10 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-import './bootstrap';
+import './bootstrap.js';
 import { createApp } from 'vue';
+import 'bootstrap/dist/css/bootstrap.css';
+
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin

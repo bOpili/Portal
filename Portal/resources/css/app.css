@@ -1,0 +1,14 @@
+.main {
+    background-color: #272727;
+    color: #a9a8a8;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+}
+
+#header {
+    font-size: 72px;
+    font-family: "Brush Script MT", cursive;
+    color: #272727;
+    text-shadow: -1px -1px 0 #FF652F, 1px -1px 0 #FF652F, -1px 1px 0 #FF652F, 1px 1px 0 #FF652F;
+}
