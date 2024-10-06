@@ -20,8 +20,12 @@ const app = createApp({});
 import ExampleComponent from './components/ExampleComponent.vue';
 app.component('example-component', ExampleComponent);
 
-import MainPage from './components/MainPage.vue';
-app.component('main-page', MainPage);
+import LoginButton from './components/LoginButton.vue';
+app.component('login-button', LoginButton);
+
+import RegisterButton from './components/RegisterButton.vue';
+app.component('register-button', RegisterButton);
+
 
 /**
  * The following block of code may be used to automatically register your

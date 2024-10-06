@@ -16,12 +16,7 @@
 
     </head>
     <body class="main" id="app">
-
         <div class="d-flex flex-column mx-3">
-            <div class="d-flex flex-row flex-nowrap">
-                <div class="flex-grow-1"><h1 id="header">Wspólne Latanie</h1></div>
-                <div class=" align-content-center border"><login-button></login-button></div>
-            </div>
             <div class="d-flex flex-row flex-nowrap flex-grow-1">
                 @yield('body')
             </div>
@@ -29,8 +24,5 @@
                 <div class="flex-fill"><h1 id="header">Stopisko</h1></div>
             </div>
         </div>
-
-
-
     </body>
 </html>
