@@ -9,8 +9,8 @@ import { route } from '../../../vendor/tightenco/ziggy/src/js';
         <meta head-key="description" name="description" content="Opis domyślny"/>
     </Head>
     <div>
-        <header class="bg-indigo-500 text-white">
-            <nav class="flex items-center justify-between p-4 max-w-screen-lg mx-auto">
+        <header class="bg-orange-600 text-white text-lg">
+            <nav class="flex items-center justify-between p-4">
                 <div class="space-x-6">
                     <Link :href="route('home')" preserve-scroll>Home</Link>
                     <Link :href="route('register')" preserve-scroll>Register</Link>

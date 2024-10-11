@@ -1,8 +1,9 @@
 <script setup>
 
-import { reactive } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import TextInput from '../Components/TextInput.vue';
 
-const form = reactive({
+const form = useForm({
     name: null,
     email: null,
     password: null,
@@ -11,9 +12,10 @@ const form = reactive({
 
 
 const submit = () => {
-        console.log(form);
+        form.post(route('register'), {
+            onError: () => form.reset("password", "password_confirmation"),
+        })
     }
-
 </script>
 
 <template>
@@ -22,30 +24,24 @@ const submit = () => {
         <meta head-key="description" name="description" content="Strona rejestracji nowego użytkownika"/>
     </Head>
     <div>
-        <h1>Register new account</h1>
-        <div class="w-1/5 flex justify-start my-2">
-            <form @submit.prevent="submit">
-                <div class="flex mb-4">
-                    <label for="username">Name</label>
-                    <input class="border-2 border-opacity-25 mx-2 pl-1" id="username" type="text" placeholder="Username" v-model="form.name">
-                </div>
-                <div class="flex mb-4">
-                    <label for="email">Email</label>
-                    <input class="border-2 border-opacity-25 mx-2 pl-1" id="email" type="text" placeholder="example@email.com" v-model="form.email">
-                </div>
-                <div class="flex mb-4">
-                    <label for="password">Password</label>
-                    <input class="border-2 border-opacity-25 mx-2 pl-1" id="password" type="text" v-model="form.password">
-                </div>
-                <div class="flex mb-4">
-                    <label for="confPassword">Confirm password</label>
-                    <input class="border-2 border-opacity-25 mx-2 pl-1" id="confPassword" type="text" v-model="form.password_confirmation">
-                </div>
-                <div class="mb-4">
-                    <p class="mb-2">Already a user? <a href="">Login</a></p>
-                    <button class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 border border-orange-700 rounded">Register</button>
-                </div>
-            </form>
+
+        <div class="flex justify-start my-2 space-x-32">
+            <div>
+                <h1 class="mb-4 text-xl">Register new account</h1>
+                <form @submit.prevent="submit">
+                    <TextInput name="Username" v-model="form.name" :message="form.errors.name"></TextInput>
+                    <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email"></TextInput>
+                    <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password"></TextInput>
+                    <TextInput name="Confirm password" type="password" v-model="form.password_confirmation"></TextInput>
+                    <div class="mt-4">
+                        <h1 class="mb-4">Already a user? <a href="" class="text-orange-500 font-bold">Login</a></h1>
+                    </div>
+                    <div class="mt-4">
+                        <button class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 border border-orange-700 rounded" :disabled="form.processing">Register</button>
+                    </div>
+
+                </form>
+            </div>
         </div>
     </div>
 </template>
