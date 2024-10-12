@@ -3,7 +3,7 @@
 
 <template>
     <Head>
-        <title> | {{ $page.component }}</title>
+        <title> | Home page</title>
         <meta head-key="description" name="description" content="Strona główna portalu"/>
     </Head>
     <div>
