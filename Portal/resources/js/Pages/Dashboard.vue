@@ -29,7 +29,7 @@ const submit = () => {
                 <div class="ms-4 mt-4">
                     <div class="cursor-pointer w-32 h-32 border border-orange-800 rounded-full overflow-hidden">
                     <div class="flex items-center justify-center h-full text-gray-500">
-                        <label for="pfp" class="h-full w-full"><img class="h-full w-full" :src="form.preview ? (form.preview):($page.props.auth.user.profilepic?('/storage/'+$page.props.auth.user.profilepic):('/storage/ProfilePictures/defaultpfp.jpg'))"></label>
+                        <label for="pfp" class="h-full w-full"><img class="h-full w-full" :src="form.preview ? (form.preview):('/storage/'+$page.props.auth.user.profilepic)"></label>
                     </div>
                     <input type="file" id="pfp" name="pfp" accept="image/*" @input="changePfp" hidden>
                     <p>{{ form.errors.pfp }}</p>

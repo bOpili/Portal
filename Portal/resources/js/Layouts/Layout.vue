@@ -1,5 +1,6 @@
 <script setup>
 
+import { Link } from '@inertiajs/vue3';
 import { route } from '../../../vendor/tightenco/ziggy/src/js';
 
 </script>
@@ -20,11 +21,9 @@ import { route } from '../../../vendor/tightenco/ziggy/src/js';
                     </Link>
                 </div>
                 <div v-if="$page.props.auth.user" class="flex justify-between space-x-5">
-                    <img class="object-fill w-10 ring-2 ring-orange-800 rounded-full bg-orange-700 shadow-lg" :src="$page.props.auth.user.profilepic? ('storage/' + $page.props.auth.user.profilepic) : ('/storage/ProfilePictures/defaultpfp.jpg')" alt="Current user profile picture" />
                     <Link :href="route('dashboard')" preserve-scroll
-                        class="text-center ring-1 ring-amber-800 w-32 p-2 rounded-lg shadow-lg hover:bg-orange-800"
-                        :class="{ 'bg-orange-800': $page.component === 'Dashboard' }">
-                    Profile
+                        class="content-center ring-amber-800 ">
+                        <img class="object-fill size-11 rounded-full bg-orange-700 shadow-lg" :src="'storage/' + $page.props.auth.user.profilepic" alt="Current user profile picture" />
                     </Link>
                     <Link :href="route('logout')" method="post"
                         class="text-center ring-1 ring-amber-800 w-32 p-2 rounded-lg shadow-lg hover:bg-orange-800"
