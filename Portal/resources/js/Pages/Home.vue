@@ -1,4 +1,6 @@
 <script setup>
+
+import PageFloatContainer from './Components/PageFloatContainer.vue';
 </script>
 
 <template>
@@ -7,7 +9,9 @@
         <meta head-key="description" name="description" content="Strona główna portalu"/>
     </Head>
     <div>
-        <p>{{ $page.props.flash.message ? ($page.props.flash.message + ' ' + $page.props.auth.user.name):('')}}</p>
-        <h1>Home page</h1>
+        <PageFloatContainer>
+            <p>{{ $page.props.flash.message ? ($page.props.flash.message + ' ' + $page.props.auth.user.name):('')}}</p>
+            <h1>Home page</h1>
+        </PageFloatContainer>
     </div>
 </template>
