@@ -3,6 +3,8 @@
 import { useForm } from '@inertiajs/vue3';
 import TextInput from '../Components/TextInput.vue';
 import PageFloatContainer from '../Components/PageFloatContainer.vue';
+import ConfirmButton from '../Components/ConfirmButton.vue';
+import NavLink from '../Components/NavLink.vue';
 
 const form = useForm({
     name: null,
@@ -22,26 +24,23 @@ const submit = () => {
 <template>
 
     <Head>
-        <title> | Register</title>
+        <title> | Rejestracja</title>
         <meta head-key="description" name="description" content="Strona rejestracji nowego użytkownika" />
     </Head>
     <PageFloatContainer>
-        <div class="flex justify-start my-2 space-x-32">
-            <form @submit.prevent="submit" class="w-1/3">
-                <h1 class="mb-4 text-xl">Register new account</h1>
-                <TextInput name="Username" v-model="form.name" :message="form.errors.name"></TextInput>
-                <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email"></TextInput>
-                <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password">
+        <div class="flex justify-center my-2 space-x-32">
+            <form @submit.prevent="submit" class="grid w-1/3">
+                <h1 class="justify-self-center mb-4 text-xl">Stwórz konto</h1>
+                <TextInput name="Username" v-model="form.name" :message="form.errors.name" label="Nazwa użytkownika"></TextInput>
+                <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email" label="Email"></TextInput>
+                <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password" label="Hasło">
                 </TextInput>
-                <TextInput name="Confirm password" type="password" v-model="form.password_confirmation"></TextInput>
+                <TextInput name="Confirm password" type="password" v-model="form.password_confirmation" label="Potwierdź hasło"></TextInput>
                 <div class="mt-4">
-                    <h1 class="mb-4">Already a user? <a :href="route('login')"
-                            class="text-orange-500 font-bold">Login</a></h1>
+                    <h1 class="mb-4">Masz już konto? <NavLink routeName="login">Zaloguj się</NavLink></h1>
                 </div>
-                <div class="mt-4">
-                    <button
-                        class="bg-orange-500 hover:bg-orange-700 text-white py-2 px-4 border border-orange-700 rounded"
-                        :disabled="form.processing">Register</button>
+                <div class="justify-self-center mt-4">
+                    <ConfirmButton :disabled="form.processing">Potwierdź</ConfirmButton>
                 </div>
             </form>
         </div>

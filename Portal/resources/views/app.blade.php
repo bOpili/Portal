@@ -16,7 +16,7 @@
     @inertiaHead
     @routes
   </head>
-  <body  class="bg-zinc-300 text-stone-700 dark:bg-stone-700 dark:text-zinc-200 font-RethinkSans">
+  <body  class="bg-zinc-300 text-black dark:bg-stone-700 dark:text-white font-RethinkSans">
     @inertia
   </body>
 </html>

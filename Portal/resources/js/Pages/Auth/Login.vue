@@ -3,6 +3,9 @@
 import { useForm } from '@inertiajs/vue3';
 import TextInput from '../Components/TextInput.vue';
 import PageFloatContainer from '../Components/PageFloatContainer.vue';
+import ConfirmButton from '../Components/ConfirmButton.vue';
+import CheckBox from '../Components/CheckBox.vue';
+import NavLink from '../Components/NavLink.vue';
 
 const form = useForm({
     email: null,
@@ -21,27 +24,24 @@ const submit = () => {
 <template>
 
     <Head>
-        <title> | Login</title>
+        <title> | Logowanie</title>
         <meta head-key="description" name="description" content="Strona logowania użytkownika" />
     </Head>
     <PageFloatContainer>
-        <div class="flex justify-start my-2 space-x-32">
-            <form @submit.prevent="submit" class="w-1/3">
-                <h1 class="mb-4 text-xl">Login to an existing account</h1>
-                <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email"></TextInput>
-                <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password">
-                </TextInput>
+        <div class="flex justify-center my-2">
+            <form @submit.prevent="submit" class="grid flex-col w-1/3">
+                <h1 class="justify-self-center mb-4 text-xl">Logowanie</h1>
+                <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email" label="Email"></TextInput>
+                <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password" label="Hasło"> </TextInput>
                 <div class="flex items-center justify-between mt-4">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="remember" v-model="form.remember">
-                        <label for="remember">Remember me</label>
-                    </div>
-                    <p>Already a user? <a :href="route('register')" class="text-orange-500 font-bold">Register</a></p>
+                    <p>Nie masz konta? <NavLink routeName="register">Zarejestruj się</NavLink> </p>
+                    <NavLink routeName="home">Zapomniałeś hasła?</NavLink>
                 </div>
-                <div class="mt-4">
-                    <button
-                        class="bg-orange-500 hover:bg-orange-700 text-white py-2 px-4 border border-orange-700 rounded"
-                        :disabled="form.processing">Login</button>
+                <div class="justify-self-center mt-4">
+                    <CheckBox id="remember" v-model="form.remember">Zapamiętaj mnie</CheckBox>
+                </div>
+                <div class="justify-self-center mt-4">
+                    <ConfirmButton :disabled="form.processing">Zaloguj</ConfirmButton>
                 </div>
             </form>
         </div>
