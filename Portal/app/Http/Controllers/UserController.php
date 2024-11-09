@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
-class UserController extends Controller
+class UserController
 {
     public function changePfp(Request $request){
         $request->validate([

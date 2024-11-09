@@ -7,8 +7,7 @@ require __DIR__ . '/user/guest.php';
 //---Home page---//
 Route::inertia('/', 'Home')->name('home');
 
-//---Events---//
-Route::inertia('events', 'Events')->middleware('verified')->name('events');
+
 
 
 

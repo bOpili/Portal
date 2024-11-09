@@ -11,6 +11,12 @@ use Inertia\Inertia;
 
 class AuthController extends Controller
 {
+
+    public function create(){
+        return Inertia::render('Auth/Login', [
+            'status' => session('status')
+        ]);
+    }
     public function register(Request $request){
         // Validate
         $fields = $request->validate([

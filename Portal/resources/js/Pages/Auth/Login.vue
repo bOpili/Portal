@@ -6,6 +6,7 @@ import PageFloatContainer from '../Components/PageFloatContainer.vue';
 import ConfirmButton from '../Components/ConfirmButton.vue';
 import CheckBox from '../Components/CheckBox.vue';
 import NavLink from '../Components/NavLink.vue';
+import SessionMessage from '../Components/SessionMessage.vue';
 
 const form = useForm({
     email: null,
@@ -13,6 +14,9 @@ const form = useForm({
     remember: null,
 })
 
+const props = defineProps ({
+    status: String
+})
 
 const submit = () => {
     form.post(route('login'), {
@@ -33,9 +37,10 @@ const submit = () => {
                 <h1 class="justify-self-center mb-4 text-xl">Logowanie</h1>
                 <TextInput name="Email" type="email" v-model="form.email" :message="form.errors.email" label="Email"></TextInput>
                 <TextInput name="Password" type="password" v-model="form.password" :message="form.errors.password" label="Hasło"> </TextInput>
+                <SessionMessage :status="props.status"></SessionMessage>
                 <div class="flex items-center justify-between mt-4">
                     <p>Nie masz konta? <NavLink routeName="register">Zarejestruj się</NavLink> </p>
-                    <NavLink routeName="home">Zapomniałeś hasła?</NavLink>
+                    <NavLink routeName="password.request">Zapomniałeś hasła?</NavLink>
                 </div>
                 <div class="justify-self-center mt-4">
                     <CheckBox id="remember" v-model="form.remember">Zapamiętaj mnie</CheckBox>
