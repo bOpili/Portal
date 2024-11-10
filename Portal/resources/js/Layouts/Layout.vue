@@ -4,6 +4,7 @@ import { Link } from '@inertiajs/vue3';
 import { route } from '../../../vendor/tightenco/ziggy/src/js';
 import { switchTheme } from '../theme';
 import NavButton from '../Pages/Components/NavButton.vue';
+import NavIcon from '../Pages/Components/NavIcon.vue';
 
 </script>
 
@@ -30,6 +31,9 @@ import NavButton from '../Pages/Components/NavButton.vue';
                     <img class="object-fill ring-1 ring-amber-800 size-11 rounded-full hover:bg-orange-800 shadow-lg hover:ring-amber-600"
                         :src="'storage/' + $page.props.auth.user.profilepic" alt="Current user profile picture" />
                     </Link>
+                    <NavIcon routeName="friends">
+                        <i class="fa-solid fa-users"></i>
+                    </NavIcon>
                     <NavButton routeName="logout" text="Wyloguj" method="post"></NavButton>
                 </div>
                 <div v-else class="flex flex-wrap space-x-6">
