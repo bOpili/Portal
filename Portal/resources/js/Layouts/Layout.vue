@@ -31,7 +31,7 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
                     <img class="object-fill ring-1 ring-amber-800 size-11 rounded-full hover:bg-orange-800 shadow-lg hover:ring-amber-600"
                         :src="'storage/' + $page.props.auth.user.profilepic" alt="Current user profile picture" />
                     </Link>
-                    <NavIcon routeName="friends">
+                    <NavIcon routeName="users">
                         <i class="fa-solid fa-users"></i>
                     </NavIcon>
                     <NavButton routeName="logout" text="Wyloguj" method="post"></NavButton>

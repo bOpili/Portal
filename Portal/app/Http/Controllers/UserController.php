@@ -21,8 +21,13 @@ class UserController extends Controller
         }
     }
 
+    public function showUsers(){
+        $users = DB::table('users')->where('id','!=',Auth::user()->id)->get();
+        return Inertia::render('Auth/Users',['users'=>$users]);
+    }
+
     public function findUser(Request $request){
         $found = DB::table('users')->where('name','=',$request->Name)->get();
-        return Inertia::render('Auth/Friends',['users'=>$found]);
+        return Inertia::render('Auth/Users',['users'=>$found]);
     }
 }
