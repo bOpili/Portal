@@ -19,7 +19,7 @@ const form = useForm({
 
 
 const submit = () => {
-    form.post(route('events.create'))
+    form.post(route('event.store'))
 }
 
 

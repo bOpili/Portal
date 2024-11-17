@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class EventController extends Controller
@@ -15,8 +19,24 @@ class EventController extends Controller
     public function index()
     {
 
-        $events = Event::latest()->paginate(6);
-        return Inertia::render('Events/Events', ['events' => $events]);
+        $events = Event::latest()->withCount(['users'])->paginate(6);
+        return Inertia::render('Events/Events', ['events' => $events, 'joinMessage'=> session('joinMessage')],);
+    }
+
+    public function join(Request $request){
+
+        $event = Event::findOrFail($request->eventId);
+
+        if($event->users->find(Auth::id())){
+            return back()->with('joinMessage', 'Jesteś już członkiem tego wydarzenia');
+        }
+        if($event->users->count() >= $event->slots){
+            return back()->with('joinMessage', 'Brak wolnych miejsc');
+        }
+
+        $event->users()->attach(Auth::id());
+
+        return back()->with('joinMessage', 'Dołączono do wydarzenia');
     }
 
     /**
@@ -32,7 +52,22 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
-        //
+        $fields = $request->validate([
+            "title" => ['required', 'max:255'],
+            "description" => ['required'],
+            "tags" => ['nullable','string'],
+            "slots" => ['required','int'],
+            "game" => ['required'],
+            "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp']
+        ]);
+
+        if ($request->hasFile('image')){
+           $fields['image'] = Storage::disk('public')->put('Events',$request->image);
+        }
+
+        $request->user()->events()->create($fields);
+
+        return redirect()->route('events');
     }
 
     /**
