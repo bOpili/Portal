@@ -28,6 +28,7 @@ const closePopup = () => {
     isVisible.value = false;
     emit('closed')
 };
+
 </script>
 
 <style scoped>

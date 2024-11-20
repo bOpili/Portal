@@ -4,7 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import ConfirmButton from '../Components/ConfirmButton.vue';
 import FilterInput from '../Components/FilterInput.vue';
 import PageFloatContainer from '../Components/PageFloatContainer.vue';
-import VerticalSeparator from '../Components/VerticalSeparator.vue';
+import HorizontalSeparator from '../Components/HorizontalSeparator.vue';
 
 const form = useForm({
     Name: ""
@@ -35,7 +35,7 @@ const submit = () => {
                 <ConfirmButton>Szukaj</ConfirmButton>
             </form>
         </div>
-        <VerticalSeparator></VerticalSeparator>
+        <HorizontalSeparator></HorizontalSeparator>
         <table class="table-auto border-separate border-spacing-4">
             <tr v-for="user in props.users" >
                 <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "

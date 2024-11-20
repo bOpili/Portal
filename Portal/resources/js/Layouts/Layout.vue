@@ -29,7 +29,7 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
                 <div v-if="$page.props.auth.user" class="flex flex-wrap justify-between space-x-5">
                     <Link :href="route('dashboard')" preserve-scroll class="content-center">
                     <img class="object-fill ring-1 ring-amber-800 size-11 rounded-full hover:bg-orange-800 shadow-lg hover:ring-amber-600"
-                        :src="'storage/' + $page.props.auth.user.profilepic" alt="Current user profile picture" />
+                        :src="'/storage/' + $page.props.auth.user.profilepic" alt="Current user profile picture" />
                     </Link>
                     <NavIcon routeName="users">
                         <i class="fa-solid fa-users"></i>

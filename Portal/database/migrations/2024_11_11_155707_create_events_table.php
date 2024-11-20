@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('slots')->nullable();
             $table->string('game')->nullable();
             $table->string('image')->nullable();
+            $table->timestamp('date');
             $table->timestamps();
         });
     }

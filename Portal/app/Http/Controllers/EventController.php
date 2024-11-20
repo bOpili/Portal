@@ -7,6 +7,7 @@ use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -28,15 +29,15 @@ class EventController extends Controller
         $event = Event::findOrFail($request->eventId);
 
         if($event->users->find(Auth::id())){
-            return back()->with('joinMessage', 'Jesteś już członkiem tego wydarzenia');
+            return back()->with('message', 'Jesteś już członkiem tego wydarzenia');
         }
         if($event->users->count() >= $event->slots){
-            return back()->with('joinMessage', 'Brak wolnych miejsc');
+            return back()->with('message', 'Brak wolnych miejsc');
         }
 
         $event->users()->attach(Auth::id());
 
-        return back()->with('joinMessage', 'Dołączono do wydarzenia');
+        return back()->with('message', 'Dołączono do wydarzenia');
     }
 
     /**
@@ -58,11 +59,14 @@ class EventController extends Controller
             "tags" => ['nullable','string'],
             "slots" => ['required','int'],
             "game" => ['required'],
-            "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp']
+            "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp'],
+            "date" => ['required']
         ]);
 
         if ($request->hasFile('image')){
            $fields['image'] = Storage::disk('public')->put('Events',$request->image);
+        }else{
+           $fields['image'] = 'Events/DefaultEvent2.webp';
         }
 
         $request->user()->events()->create($fields);
@@ -75,7 +79,8 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        //
+        return Inertia::render('Events/EventDetails',
+['event' => Event::withCount('users')->where('id',$event->id)->first(), 'users' => $event->users()->get()]);
     }
 
     /**

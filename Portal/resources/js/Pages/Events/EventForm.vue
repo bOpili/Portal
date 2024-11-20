@@ -15,6 +15,7 @@ const form = useForm({
     slots: null,
     game: null,
     image: null,
+    date: null,
 })
 
 
@@ -40,7 +41,8 @@ const submit = () => {
                 <ImageInput @image="(e) => form.image = e"></ImageInput>
                 <TextInput name="Tags" type="text" v-model="form.tags" label="Wpisz tagi oddzielone przecinkiem"></TextInput>
                 <TextInput name="Game" type="text" v-model="form.game" label="W jakiej grze odbywa się wydarzenie"></TextInput>
-                <NumberInput class="col-span-2" name="Slots" v-model="form.slots" :message="form.errors.slots" label="Liczba miejsc"></NumberInput>
+                <TextInput name="Date" type="datetime-local" v-model="form.date" label="Kiedy odbywa się wydarzenie"></TextInput>
+                <NumberInput name="Slots" v-model="form.slots" :message="form.errors.slots" label="Liczba miejsc"></NumberInput>
                 <div class="justify-self-center mt-4 col-span-2">
                     <ConfirmButton :disabled="form.processing">Potwierdź</ConfirmButton>
                 </div>

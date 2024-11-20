@@ -22,6 +22,7 @@ class Event extends Model
         'slots',
         'game',
         'image',
+        'date',
     ];
     public function users(): BelongsToMany
     {
