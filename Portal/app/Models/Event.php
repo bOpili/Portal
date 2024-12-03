@@ -24,9 +24,14 @@ class Event extends Model
         'image',
         'date',
     ];
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
+    }
+
+    public function userStatus($userId){
+        return $this->users()->where('user_id',$userId)->first()->status;
     }
 
 }

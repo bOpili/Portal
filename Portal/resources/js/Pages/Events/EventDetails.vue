@@ -10,12 +10,20 @@ import PopupMessage from '../Components/PopupMessage.vue';
 const props = defineProps({
     event: Object,
     users: Array,
+    pendingUsers: Array,
+    userStatus: Number,
     joinMessage: String,
 })
 
 
 const form = useForm({
     eventId: props.event.id,
+
+})
+
+const acceptForm = useForm({
+    eventId: props.event.id,
+    userId: null
 })
 
 const formattedDate = moment(String(props.event.date)).format('hh:mm DD.MM.YYYY')
@@ -24,9 +32,13 @@ const submit = () => {
     form.post(route('event.join'))
 }
 
-// Function to reset the message and hide the popup
+const accept = (userId) => {
+    acceptForm.userId = userId;
+    acceptForm.post(route('event.accept'))
+}
+
 const resetMessage = () => {
-  location.reload();
+    location.reload();
 };
 
 </script>
@@ -39,12 +51,12 @@ const resetMessage = () => {
     </Head>
 
     <PageFloatContainer>
-
         <div class="grid grid-cols-2 space-y-4">
             <h1 class="self-end text-2xl font-bold">{{ event.title }}</h1>
             <h1 class="justify-self-end">Data wydarzenia: {{ formattedDate }}</h1>
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
-            <img v-if="event.image" :src="'/storage/' + event.image" alt="Event Image" class="object-cover rounded justify-self-center col-span-2 w-1/3"/>
+            <img v-if="event.image" :src="'/storage/' + event.image" alt="Event Image"
+                class="object-cover rounded justify-self-center col-span-2 w-1/3" />
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
             <p class="col-span-2">
                 <span v-for="tag in event.tags.split(',')" :key="tag"
@@ -62,23 +74,48 @@ const resetMessage = () => {
             <p>
                 <strong>Sloty:</strong> {{ event.users_count + '/' + event.slots }}
             </p>
-            <div class="mt-4 justify-self-end">
+            <div v-if="userStatus == 1" class="mt-4 justify-self-end">
+                <ConfirmButton>Jesteś już członkiem tego wydarzenia</ConfirmButton>
+            </div>
+            <div v-else-if="userStatus == 0" class="mt-4 justify-self-end">
+                <ConfirmButton>Host musi zaakceptować twoją prośbę o dołączenie</ConfirmButton>
+            </div>
+            <div v-else-if="userStatus == 2">
+
+            </div>
+            <div v-else class="mt-4 justify-self-end">
                 <form @submit.prevent="submit">
                     <ConfirmButton>Dołącz</ConfirmButton>
                 </form>
             </div>
 
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
-            <h1>Uczestnicy:</h1>
-                <table class="table-auto border-separate border-spacing-4">
-                    <tr v-for="user in props.users" >
-                        <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
+            <h1 :class="(userStatus == 2) ? 'col-span-1' : 'col-span-2'">Uczestnicy:</h1>
+            <h1 v-if="userStatus == 2">Uczestnicy oczekujący:</h1>
+            <table class="table-auto border-separate border-spacing-4">
+                <tr v-for="(user, index) in props.users">
+                    <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
                             :src="'/storage/' + user.profilepic" alt="Current user profile picture" /></td>
-                        <td>{{ user.name }}</td>
-                    </tr>
-                </table>
+                    <td>{{ user.name }}</td>
+                    <td v-if="index == 0">Host</td>
+                    <td v-else>Uczestnik</td>
+                </tr>
+            </table>
+            <table v-if="userStatus == 2" class="table-auto border-separate border-spacing-4">
+                <tr v-for="(user, index) in props.pendingUsers">
+                    <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
+                            :src="'/storage/' + user.profilepic" alt="Current user profile picture" /></td>
+                    <td>{{ user.name }}</td>
+                    <td>
+                        <form @submit.prevent="accept(user.id)">
+                            <ConfirmButton>Zaakceptuj</ConfirmButton>
+                        </form>
+                    </td>
+                </tr>
+            </table>
 
-            <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message"></PopupMessage>
+            <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message">
+            </PopupMessage>
         </div>
 
     </PageFloatContainer>

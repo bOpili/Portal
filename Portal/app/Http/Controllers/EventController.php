@@ -21,23 +21,32 @@ class EventController extends Controller
     {
 
         $events = Event::latest()->withCount(['users'])->paginate(6);
-        return Inertia::render('Events/Events', ['events' => $events, 'joinMessage'=> session('joinMessage')],);
+        return Inertia::render('Events/Events', ['events' => $events, 'joinMessage' => session('joinMessage')], );
     }
 
-    public function join(Request $request){
+    public function join(Request $request)
+    {
 
         $event = Event::findOrFail($request->eventId);
 
-        if($event->users->find(Auth::id())){
+        if ($event->users->find(Auth::id())) {
             return back()->with('message', 'Jesteś już członkiem tego wydarzenia');
         }
-        if($event->users->count() >= $event->slots){
+        if ($event->users->count() >= $event->slots) {
             return back()->with('message', 'Brak wolnych miejsc');
         }
 
         $event->users()->attach(Auth::id());
 
         return back()->with('message', 'Dołączono do wydarzenia');
+    }
+
+    public function accept(Request $request)  {
+        $event = Event::findOrFail($request->eventId);
+
+        $event->users()->where('user_id',$request->userId)->update(['status' => 1]);
+
+        return back()->with('message', 'Zaakceptowano użytkownika');
     }
 
     /**
@@ -56,20 +65,22 @@ class EventController extends Controller
         $fields = $request->validate([
             "title" => ['required', 'max:255'],
             "description" => ['required'],
-            "tags" => ['nullable','string'],
-            "slots" => ['required','int'],
+            "tags" => ['nullable', 'string'],
+            "slots" => ['required', 'int'],
             "game" => ['required'],
             "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp'],
             "date" => ['required']
         ]);
 
-        if ($request->hasFile('image')){
-           $fields['image'] = Storage::disk('public')->put('Events',$request->image);
-        }else{
-           $fields['image'] = 'Events/DefaultEvent2.webp';
+        if ($request->hasFile('image')) {
+            $fields['image'] = Storage::disk('public')->put('Events', $request->image);
+        } else {
+            $fields['image'] = 'Events/DefaultEvent2.webp';
         }
 
-        $request->user()->events()->create($fields);
+        $event = $request->user()->events()->create($fields);
+
+        $event->users()->where('user_id', Auth::id())->update(['status' => 2]);
 
         return redirect()->route('events');
     }
@@ -79,8 +90,26 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        return Inertia::render('Events/EventDetails',
-['event' => Event::withCount('users')->where('id',$event->id)->first(), 'users' => $event->users()->get()]);
+
+        $userStatus = $event->users()->withPivot('status')->find(Auth::id());
+
+
+        return Inertia::render(
+            'Events/EventDetails',
+            [
+                'event' => Event::withCount(
+                    [
+                        'users' => function ($query) {
+                            $query->where('status', '>', 0); },
+                        'users as users_awaiting' => function ($query) {
+                            $query->where('status', 0); }
+                    ]
+                )->where('id', $event->id)->first(),
+                'users' => $event->users()->where('status','>', 0)->get(),
+                'userStatus' => $userStatus ? $userStatus->getOriginal('pivot_status') : -1,
+                'pendingUsers' => $event->users()->where('status','=', 0)->get()
+            ]
+        );
     }
 
     /**

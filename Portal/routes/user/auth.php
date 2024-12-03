@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     //---Events---//
     Route::get('events', [EventController::class, 'index'])->middleware('verified')->name('events');
     Route::post('events', [EventController::class, 'join'])->middleware('verified')->name('event.join');
+    Route::post('events', [EventController::class, 'accept'])->middleware('verified')->name('event.accept');
     Route::resource('event',EventController::class)->except('index');
 });
 
