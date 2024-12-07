@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Models\Game;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +23,7 @@ class EventController extends Controller
     {
 
         $events = Event::latest()->withCount(['users'])->paginate(6);
+        $events->load('game')->load('tags');
         return Inertia::render('Events/Events', ['events' => $events, 'joinMessage' => session('joinMessage')], );
     }
 
@@ -54,7 +57,7 @@ class EventController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Events/EventForm');
+        return Inertia::render('Events/EventForm', ['tags' => Tag::get(), 'games' => Game::get()]);
     }
 
     /**
@@ -62,15 +65,16 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
+
         $fields = $request->validate([
             "title" => ['required', 'max:255'],
             "description" => ['required'],
-            "tags" => ['nullable', 'string'],
             "slots" => ['required', 'int'],
-            "game" => ['required'],
             "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp'],
-            "date" => ['required']
+            "date" => ['required'],
+            "game_id" => ['required'],
         ]);
+
 
         if ($request->hasFile('image')) {
             $fields['image'] = Storage::disk('public')->put('Events', $request->image);
@@ -78,7 +82,15 @@ class EventController extends Controller
             $fields['image'] = 'Events/DefaultEvent2.webp';
         }
 
+
         $event = $request->user()->events()->create($fields);
+
+        foreach($request->tags as $tag){
+
+            $event->tags()->attach($tag['id']);
+        }
+
+
 
         $event->users()->where('user_id', Auth::id())->update(['status' => 2]);
 
@@ -94,17 +106,23 @@ class EventController extends Controller
         $userStatus = $event->users()->withPivot('status')->find(Auth::id());
 
 
+        $event = Event::withCount(
+            [
+                'users' => function ($query) {
+                    $query->where('status', '>', 0); },
+                'users as users_awaiting' => function ($query) {
+                    $query->where('status', 0); }
+            ]
+        )->where('id', $event->id)->first();
+
+        $event->load('game')->load('tags');
+
+
+
         return Inertia::render(
             'Events/EventDetails',
             [
-                'event' => Event::withCount(
-                    [
-                        'users' => function ($query) {
-                            $query->where('status', '>', 0); },
-                        'users as users_awaiting' => function ($query) {
-                            $query->where('status', 0); }
-                    ]
-                )->where('id', $event->id)->first(),
+                'event' => $event,
                 'users' => $event->users()->where('status','>', 0)->get(),
                 'userStatus' => $userStatus ? $userStatus->getOriginal('pivot_status') : -1,
                 'pendingUsers' => $event->users()->where('status','=', 0)->get()

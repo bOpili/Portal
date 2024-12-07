@@ -26,6 +26,7 @@ class AuthController extends Controller
         ]);
 
         $fields['profilepic'] = 'ProfilePictures/defaultpfp.jpg';
+
         // Register
         $user = User::create($fields);
 
@@ -35,8 +36,12 @@ class AuthController extends Controller
         // Send verification mail
         event(new Registered($user));
 
+        $message = `Welcome to my inżynierka $user->name, na Twój adres mailowy został wysłany link weryfikacyjny`;
+
+        dd($message);
+
         // Redirect
-        return redirect()->route('home')->with('message', 'Welcome to my inżynierka');
+        return redirect()->route('home')->with('message', $message);
     }
 
     public function login(Request $request){

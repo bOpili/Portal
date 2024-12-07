@@ -59,26 +59,26 @@ const resetMessage = () => {
                 class="object-cover rounded justify-self-center col-span-2 w-1/3" />
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
             <p class="col-span-2">
-                <span v-for="tag in event.tags.split(',')" :key="tag"
+                <span v-for="tag in event.tags" :key="tag"
                     class="inline-block px-2 py-1 rounded-full mr-2 text-sm text-white bg-orange-500  dark:bg-orange-700 border border-orange-700  dark:border-orange-800">
-                    {{ tag }}
+                    {{ tag.name }}
                 </span>
             </p>
             <p class="col-span-2">
                 {{ event.description }}
             </p>
             <p class="col-span-2">
-                <strong>Gra:</strong> {{ event.game }}
+                <strong>Gra:</strong> {{ event.game.title }}
             </p>
 
             <p>
                 <strong>Sloty:</strong> {{ event.users_count + '/' + event.slots }}
             </p>
             <div v-if="userStatus == 1" class="mt-4 justify-self-end">
-                <ConfirmButton>Jesteś już członkiem tego wydarzenia</ConfirmButton>
+                <p>Jesteś już członkiem tego wydarzenia</p>
             </div>
             <div v-else-if="userStatus == 0" class="mt-4 justify-self-end">
-                <ConfirmButton>Host musi zaakceptować twoją prośbę o dołączenie</ConfirmButton>
+                <p>Host musi zaakceptować twoją prośbę o dołączenie</p>
             </div>
             <div v-else-if="userStatus == 2">
 

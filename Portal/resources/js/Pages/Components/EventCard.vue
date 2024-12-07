@@ -33,14 +33,14 @@ const props = defineProps({
             <h2 class="text-2xl font-semibold mb-2">{{ event.title }}</h2>
             <h3 class="font-semibold mb-2">{{ event.data }}</h3>
             <div class="tags flex flex-wrap gap-2 mb-4">
-                <span v-for="tag in event.tags.split(',')" :key="tag"
+                <span v-for="tag in event.tags" :key="tag"
                     class="text-sm text-white bg-orange-500  dark:bg-orange-700 border border-orange-700  dark:border-orange-800 px-2 py-1 rounded ">
-                    {{ tag }}
+                    {{ tag.name }}
                 </span>
             </div>
             <div class="flex justify-between items-center ">
                 <span><strong>Sloty:</strong> {{ event.users_count + '/' + event.slots }}</span>
-                <span><strong>Gra:</strong> {{ event.game }}</span>
+                <span><strong>Gra:</strong> {{ event.game.title }}</span>
             </div>
         </div>
     </div>
