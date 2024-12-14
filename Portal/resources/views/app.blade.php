@@ -19,4 +19,7 @@
   <body  class="bg-zinc-300 text-black dark:bg-stone-700 dark:text-white font-RethinkSans">
     @inertia
   </body>
+
 </html>
+
+

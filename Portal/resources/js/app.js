@@ -6,8 +6,6 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import Layout from './Layouts/Layout.vue';
 import { setThemeOnLoad } from './theme';
 
-
-
 createInertiaApp({
   title: (title) => `Portal${title}`,
   resolve: name => {

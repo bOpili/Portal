@@ -28,7 +28,7 @@ const handleTags = (tag) => {
 </script>
 
 <template>
-    <div class="m-4">
+    <div class="mt-4">
         <label :for="name" class="mb-1">{{ label }}</label>
         <div class="flex flex-wrap gap-2">
             <button
