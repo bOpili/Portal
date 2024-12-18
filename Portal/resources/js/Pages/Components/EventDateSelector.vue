@@ -2,7 +2,6 @@
 
 import { ref, computed } from 'vue';
 import moment from 'moment';
-import throttle from 'lodash.throttle';
 moment.updateLocale('en', {
     week: {
         dow: 1,
@@ -13,9 +12,15 @@ const currentMonth = ref(moment());
 const today = ref(moment());
 var currentView = ref('month');
 var selectedDay = ref(null);
-const eventStart = ref(null);
-const eventEnd = ref(null);
+let eventDuration = ref(30); // Duration in minutes
+const events = ref([]); // Array to store created events
+const isResizing = ref(false);
+const resizingEvent = ref(null);
+const resizeStartY = ref(null);
 const isDragging = ref(false);
+const draggingEvent = ref(null);
+const dragStartY = ref(null);
+const dragStartTime = ref(null);
 
 const emit = defineEmits(['selectedEventTimeframe']);
 
@@ -91,12 +96,6 @@ const goToNext = () => {
     console.log("goToNext")
 };
 
-const goToDayDbClick = (day) => {
-    currentView.value = 'day';
-    selectedDay.value = day;
-    console.log("goToDayDbClick")
-};
-
 const goToWeekView = (day) => {
     if (!day.isSame(currentMonth.value, 'month')) {
         currentMonth.value = day.clone();
@@ -126,32 +125,118 @@ const goUpCalendar = () => {
     }
 };
 
-const startEvent = (day, hour) => {
-    isDragging.value = true;
-    eventStart.value = day.clone();
-    eventStart.value = day.clone().hour(parseInt(hour.substring(0, 2))).minutes(parseInt(hour.substring(3, 5)));
-    eventEnd.value = eventStart.value;
-    console.log("startEvent")
+const createEvent = (day, hour) => {
+    const [hourPart, minutePart] = hour.split(':').map(Number);
+    const start = day.clone().hour(hourPart).minute(minutePart);
+    const end = start.clone().add(eventDuration.value, 'minutes');
+
+    const newEvent = {
+        start,
+        end,
+        day: day.format('YYYY-MM-DD'),
+    };
+
+    events.value.pop();
+    events.value.push(newEvent);
+    console.log(start.format())
+    console.log(end.format())
+    emit('selectedEventTimeframe', { start: start.format(), end: end.format() });
 };
 
-const dragEvent = throttle((day, hour) => {
-    if (isDragging.value) {
-        eventEnd.value = day.clone().hour(parseInt(hour.substring(0, 2))).minutes(parseInt(hour.substring(3, 5)));
-        console.log(eventEnd.value)
-    }
-    console.log("dragEvent")
-},100);
 
-const endEvent = () => {
-    if (isDragging.value && eventStart.value && eventEnd.value) {
-        isDragging.value = false;
-        const event = {
-            start: eventStart.value.format('YYYY-MM-DD HH:mm'),
-            end: eventEnd.value.format('YYYY-MM-DD HH:mm'),
-        };
-        emit('selectedEventTimeframe', event);
+const calculateTop = (event) => {
+    const startHour = event.start.hour();
+    const startMinute = event.start.minute();
+    return startHour * 72 + (startMinute / 60) * 72; // Assuming 36px per hour
+};
+
+const calculateHeight = (event) => {
+    const duration = event.end.diff(event.start, 'minutes');
+    return (duration / 60) * 72; // Assuming 36px per hour
+};
+
+const startResizing = (event, e) => {
+    isResizing.value = true;
+    resizingEvent.value = event;
+    resizeStartY.value = e.clientY;
+    document.addEventListener('mousemove', handleResize);
+    document.addEventListener('mouseup', endResizing);
+};
+
+const handleResize = (e) => {
+    if (!isResizing.value || !resizingEvent.value) return;
+
+    const deltaY = e.clientY - resizeStartY.value;
+    const minutesPerPixel = 30 / 72;
+    let extraMinutes = deltaY * minutesPerPixel;
+
+    extraMinutes = Math.round(extraMinutes / 15) * 15;
+
+    if (extraMinutes !== 0) {
+        const newEnd = resizingEvent.value.end.clone().add(extraMinutes, 'minutes');
+
+        if (newEnd.diff(resizingEvent.value.start, 'minutes') >= 15) {
+            resizingEvent.value.end = newEnd;
+            resizeStartY.value = e.clientY;
+            eventDuration.value = resizingEvent.value.end.diff(resizingEvent.value.start, 'minutes')
+            console.log(resizingEvent.value.start.format())
+            console.log(resizingEvent.value.end.format())
+            emit('selectedEventTimeframe', { start: resizingEvent.value.start.format(), end: resizingEvent.value.end.format() });
+        }
     }
-    console.log("endEvent")
+};
+
+const endResizing = () => {
+    if (isResizing.value) {
+        isResizing.value = false;
+        resizingEvent.value = null;
+        resizeStartY.value = null;
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', endResizing);
+    }
+};
+
+const startDragging = (event, e) => {
+    isDragging.value = true;
+    draggingEvent.value = event;
+    dragStartY.value = e.clientY;
+    dragStartTime.value = event.start.clone();
+    document.addEventListener('mousemove', handleDragging);
+    document.addEventListener('mouseup', endDragging);
+};
+
+const handleDragging = (e) => {
+    if (!isDragging.value || !draggingEvent.value || isResizing.value) return; // Block dragging while resizing
+
+    const deltaY = e.clientY - dragStartY.value;
+    const minutesPerPixel = 30 / 36; // 36px per hour
+    let minutesDelta = Math.round((deltaY * minutesPerPixel) / 15) * 15; // Round to nearest 15 minutes
+
+    if (minutesDelta !== 0) {
+        const newStart = dragStartTime.value.clone().add(minutesDelta, 'minutes');
+        const duration = draggingEvent.value.end.diff(draggingEvent.value.start, 'minutes');
+
+        // Prevent dragging outside of valid time ranges (e.g., before 00:00 or after 24:00)
+        if (
+            newStart.hour() >= 0 &&
+            newStart.hour() < 24 &&
+            newStart.clone().add(duration, 'minutes').hour() < 24
+        ) {
+            draggingEvent.value.start = newStart;
+            draggingEvent.value.end = newStart.clone().add(duration, 'minutes');
+        }
+    }
+};
+
+const endDragging = () => {
+    if (isDragging.value) {
+        isDragging.value = false;
+        draggingEvent.value = null;
+        dragStartY.value = null;
+        dragStartTime.value = null;
+        document.removeEventListener('mousemove', handleDragging);
+        document.removeEventListener('mouseup', endDragging);
+    }
 };
 
 </script>
@@ -178,30 +263,54 @@ const endEvent = () => {
 
         <div v-else-if="currentView === 'week'" class="grid grid-cols-7 place-items-center">
             <div v-for="day in daysInWeek" :key="day.format('YYYY-MM-DD')"
-                :class="['p-2 w-full', day.isSame(today, 'day') ? 'bg-orange-500 bg-opacity-25' : '']">
+                :class="['p-2 w-full relative', day.isSame(today, 'day') ? 'bg-orange-500 bg-opacity-25' : '']">
                 <h3 class="text-center mb-4">{{ day.format('ddd, MMM D') }}</h3>
-                <div @dblclick="goToDayDbClick(day)">
-                    <div v-for="hour in hoursInDay" :key="hour" @mousedown="startEvent(day, hour)"
-                    @mousemove="isDragging ? dragEvent(day, hour) : ''" @mouseup="endEvent"
-                    :class="['h-9 border-b border-b-orange-600 text-xs select-none',
-                        eventStart ? (parseInt(hour.substring(0, 2)) >= eventStart.hour() && parseInt(hour.substring(0, 2)) <= eventEnd.hour() && parseInt(hour.substring(3, 5)) <= eventEnd.minutes() && eventStart.isSame(day, 'day') ? 'bg-orange-700 bg-opacity-40' : '') : '',
-                        selectedDay.isSame(today, 'day') ? (parseInt(hour.substring(0, 2)) == today.get('hour') && parseInt(hour.substring(3, 5)) <= today.get('minutes') ? 'border-t-2 border-t-red-700' : '') : '']">
+                <div class="relative"> <!-- Container for hours -->
+                    <div v-for="hour in hoursInDay" :key="hour"
+                        :class="['h-9 border-b border-b-orange-600 text-xs select-none']"
+                        @click="createEvent(day, hour)">
                         {{ hour }}
+                    </div>
+
+                    <div v-for="event in events.filter(e => e.day === day.format('YYYY-MM-DD'))"
+                        :key="event.start.format()" :style="{
+                            top: `${calculateTop(event)}px`,
+                            height: `${calculateHeight(event)}px`,
+                        }"
+                        class="absolute bg-orange-500 text-white rounded-md cursor-move w-full select-none content-center text-center"
+                        @mousedown="(e) => startDragging(event, e)">
+                        {{ event.start.format('HH:mm') }} - {{ event.end.format('HH:mm') }}
+                        <div class="resize-handle" @mousedown="(e) => startResizing(event, e)"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div v-else-if="currentView === 'day'">
-            <div>
-                <div v-for="hour in hoursInDay" :key="hour" @mousedown="startEvent(selectedDay, hour)"
-                    @mousemove="isDragging ? dragEvent(selectedDay, hour) : ''" @mouseup="endEvent"
-                    :class="['h-9 border-b border-b-orange-600 text-xs select-none',
-                        eventStart ? (parseInt(hour.substring(0, 2)) >= eventStart.hour() && parseInt(hour.substring(0, 2)) <= eventEnd.hour() && eventStart.isSame(selectedDay, 'day') ? 'bg-orange-700 bg-opacity-40' : '') : '',
-                        selectedDay.isSame(today, 'day') ? (parseInt(hour.substring(0, 2)) == today.get('hour') && parseInt(hour.substring(3, 5)) <= today.minutes() ? 'border-t-4 border-t-red-700' : '') : '']">
-                    {{ hour }}
-                </div>
-            </div>
-        </div>
     </div>
 </template>
+
+
+<style>
+.absolute {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.cursor-move {
+    cursor: move;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 5px;
+    background-color: rgb(194 65 12);
+    cursor: ns-resize;
+}
+</style>
