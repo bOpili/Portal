@@ -14,7 +14,7 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
         <meta head-key="description" name="description" content="Opis domyślny" />
     </Head>
     <div>
-        <header class="bg-orange-500 dark:bg-orange-700  text-xl text-white">
+        <header class="bg-orange-500 dark:bg-orange-700  text-xl text-white w-full">
             <nav class="flex flex-wrap items-center justify-between p-2 space-x-5">
                 <div class="flex flex-wrap space-x-6">
                     <NavButton routeName="home" pageComp="Home">Strona główna</NavButton>
