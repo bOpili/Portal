@@ -137,8 +137,7 @@ const createEvent = (day, hour) => {
 
     events.value.pop();
     events.value.push(newEvent);
-    console.log({ start: start.format(), end: end.format() })
-    emit('selectedEventTimeframe', { start: start.format(), end: end.format() });
+    emit('selectedEventTimeframe', { start: start.format('YYYY-MM-DD HH:mm:ss'), end: end.format('YYYY-MM-DD HH:mm:ss') });
 };
 
 
@@ -188,8 +187,7 @@ const handleResize = (e) => {
 
 const endResizing = () => {
     if (isResizing.value) {
-        console.log({ start: draggingEvent.value.start.format(), end: draggingEvent.value.end.format() })
-        emit('selectedEventTimeframe', { start: resizingEvent.value.start.format(), end: resizingEvent.value.end.format() });
+        emit('selectedEventTimeframe', { start: resizingEvent.value.start.format('YYYY-MM-DD HH:mm:ss'), end: resizingEvent.value.end.format('YYYY-MM-DD HH:mm:ss') });
         isResizing.value = false;
         resizingEvent.value = null;
         resizeStartY.value = null;
@@ -244,13 +242,11 @@ const endDragging = () => {
         if(draggingEvent.value.end.day() != draggingEvent.value.start.day()){
             draggingEvent.value.end.subtract(1,'minute');
         }
-        console.log({ start: draggingEvent.value.start.format(), end: draggingEvent.value.end.format() })
-        emit('selectedEventTimeframe', { start: draggingEvent.value.start.format(), end: draggingEvent.value.end.format() });
+        emit('selectedEventTimeframe', { start: draggingEvent.value.start.format('YYYY-MM-DD HH:mm:ss'), end: draggingEvent.value.end.format('YYYY-MM-DD HH:mm:ss') });
         isDragging.value = false;
         draggingEvent.value = null;
         dragStartY.value = null;
         dragStartTime.value = null;
-
         document.removeEventListener('mousemove', handleDragging);
         document.removeEventListener('mouseup', endDragging);
     }

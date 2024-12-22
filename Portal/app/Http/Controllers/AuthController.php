@@ -38,8 +38,6 @@ class AuthController extends Controller
 
         $message = `Welcome to my inżynierka $user->name, na Twój adres mailowy został wysłany link weryfikacyjny`;
 
-        dd($message);
-
         // Redirect
         return redirect()->route('home')->with('message', $message);
     }

@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Auth;
 
 class EventPolicy
 {
@@ -43,9 +44,11 @@ class EventPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Event $event): bool
+    public function delete(User $user, Event $event): Response
     {
-        //
+        return $event->userStatus($user->id) === 2
+            ? Response::allow()
+            : Response::deny('You are not the creator of this event');
     }
 
     /**

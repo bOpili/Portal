@@ -26,10 +26,16 @@ const acceptForm = useForm({
     userId: null
 })
 
-const formattedDate = moment(String(props.event.date)).format('hh:mm DD.MM.YYYY')
+const formatDate = (date) => {
+    return moment(String(date)).format('hh:mm DD.MM.YYYY');
+}
 
 const submit = () => {
     form.post(route('event.join'))
+}
+
+const deleteEvent = () => {
+    form.delete(route('event.destroy', props.event))
 }
 
 const accept = (userId) => {
@@ -53,7 +59,7 @@ const resetMessage = () => {
     <PageFloatContainer>
         <div class="grid grid-cols-2 space-y-4">
             <h1 class="self-end text-2xl font-bold">{{ event.title }}</h1>
-            <h1 class="justify-self-end">Data wydarzenia: {{ formattedDate }}</h1>
+            <h1 class="justify-self-end">Data wydarzenia: {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}</h1>
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
             <img v-if="event.image" :src="'/storage/' + event.image" alt="Event Image"
                 class="object-cover rounded justify-self-center col-span-2 w-1/3" />
@@ -81,7 +87,9 @@ const resetMessage = () => {
                 <p>Host musi zaakceptować twoją prośbę o dołączenie</p>
             </div>
             <div v-else-if="userStatus == 2">
-
+                <form @submit.prevent="deleteEvent">
+                    <ConfirmButton>Delete this event</ConfirmButton>
+                </form>
             </div>
             <div v-else class="mt-4 justify-self-end">
                 <form @submit.prevent="submit">

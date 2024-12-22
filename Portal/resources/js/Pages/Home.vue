@@ -13,7 +13,6 @@ import PageFloatContainer from './Components/PageFloatContainer.vue';
         <PageFloatContainer>
             <p>{{ $page.props.flash.message ? ($page.props.flash.message + ' ' + $page.props.auth.user.name):('')}}</p>
             <h1>Strona główna</h1>
-            <EventDateSelector></EventDateSelector>
         </PageFloatContainer>
     </div>
 </template>

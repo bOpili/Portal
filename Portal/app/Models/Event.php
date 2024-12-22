@@ -23,7 +23,8 @@ class Event extends Model
         'description',
         'slots',
         'image',
-        'date',
+        'startDate',
+        'endDate',
         'game_id',
     ];
 
@@ -33,7 +34,10 @@ class Event extends Model
     }
 
     public function userStatus($userId){
-        return $this->users()->where('user_id',$userId)->first()->status;
+
+        $user = $this->users()->withPivot('status')->find($userId);
+
+        return $user ? $user->getOriginal('pivot_status') : -1;
     }
 
     public function game()

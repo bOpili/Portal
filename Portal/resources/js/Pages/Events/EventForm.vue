@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useForm } from '@inertiajs/vue3';
 import TextInput from '../Components/TextInput.vue';
@@ -19,10 +19,10 @@ const form = useForm({
     slots: null,
     game_id: null,
     image: null,
-    date: null,
+    startDate: null,
+    endDate: null,
 })
 
-const selectedPeriod = ref(null)
 
 const submit = () => {
     form.post(route('event.store'))
@@ -33,8 +33,8 @@ const handleTagSubmit = (selectedTags) => {
 }
 
 const handleSelectedPeriod = (period) => {
-    selectedPeriod.value = period;
-    console.log('Selected Period:', period);
+    form.startDate = period.start;
+    form.endDate = period.end;
 };
 
 
@@ -59,6 +59,9 @@ defineProps({
         <div class="flex justify-center my-2 space-x-32 mx-14">
             <form @submit.prevent="submit" class="grid grid-cols-3 w-full gap-3">
                 <h1 class="col-span-3 justify-self-center mb-4 text-xl">Stwórz wydarzenie</h1>
+                <div v-for="error in $page.props.errors">
+                    <p class="text-red-500">{{ error }}</p>
+                </div>
                 <TextInput class="col-span-3" name="Title" v-model="form.title" :message="form.errors.title"
                     label="Nazwa wydarzenia"></TextInput>
                 <TextareaInput class="col-span-2" name="Opis" v-model="form.description"
@@ -67,27 +70,12 @@ defineProps({
                 <TagSelector label="Wybierz tagi" :tags="tags" @confirmTags="handleTagSubmit"></TagSelector>
                 <SelectInput name="Game" :options="games" v-model="form.game_id"
                     label="W jakiej grze odbywa się wydarzenie"></SelectInput>
-                <NumberInput name="Slots" v-model="form.slots" :message="form.errors.slots" label="Liczba miejsc">
-                </NumberInput>
-                <!-- <TextInput name="Date" type="datetime-local" v-model="form.date" label="Kiedy odbywa się wydarzenie"></TextInput> -->
-                <EventDateSelector class="col-span-3" @selected-period="handleSelectedPeriod"></EventDateSelector>
-                <div v-if="selectedPeriod" class="mt-4 p-4 border rounded bg-gray-100">
-                    <h2 class="font-semibold">Selected Period:</h2>
-                    <p>
-                        <strong>Start:</strong> {{ selectedPeriod.startDate }}
-                    </p>
-                    <p>
-                        <strong>End:</strong> {{ selectedPeriod.endDate }}
-                    </p>
-                    <p>
-                        <strong>Duration:</strong> {{ selectedPeriod.duration }} minutes
-                    </p>
-                </div>
+                <NumberInput name="Slots" v-model="form.slots" :message="form.errors.slots" label="Liczba miejsc"></NumberInput>
+                <EventDateSelector class="col-span-3 p-2 " @selectedEventTimeframe="handleSelectedPeriod"></EventDateSelector>
                 <div class="justify-self-center mt-4 col-span-3">
                     <ConfirmButton :disabled="form.processing">Potwierdź</ConfirmButton>
                 </div>
             </form>
         </div>
     </PageFloatContainer>
-
 </template>

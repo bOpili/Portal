@@ -17,7 +17,8 @@ return new class extends Migration
             $table->text('description')->charset('binary');
             $table->integer('slots')->nullable();
             $table->string('image')->nullable();
-            $table->timestamp('date');
+            $table->timestamp('startDate')->useCurrent();
+            $table->timestamp('endDate')->useCurrent();
             $table->timestamps();
         });
     }

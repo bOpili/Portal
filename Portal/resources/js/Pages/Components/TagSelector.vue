@@ -29,7 +29,7 @@ const handleTags = (tag) => {
 
 <template>
     <div class="mt-4">
-        <label :for="name" class="mb-1">{{ label }}</label>
+        <label class="mb-1">{{ label }}</label> <!-- // usunięto v-for="name" -->
         <div class="flex flex-wrap gap-2">
             <button
                 v-for="tag in tags"

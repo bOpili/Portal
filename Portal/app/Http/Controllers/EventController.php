@@ -10,6 +10,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -47,9 +48,15 @@ class EventController extends Controller
     public function accept(Request $request)  {
         $event = Event::findOrFail($request->eventId);
 
-        $event->users()->where('user_id',$request->userId)->update(['status' => 1]);
+        if($event->users()->withPivot('status')->where('status', '>', 0)->count() <= $event->slots){
+            $event->users()->where('user_id',$request->userId)->update(['status' => 1]);
+            return back()->with('message', 'User accepted');
+        } else{
+            $event->users()->where('user_id',$request->userId)->update(['status' => -1]);
+            return back()->with('message', 'No more empty slots for this user');
+        }
 
-        return back()->with('message', 'Zaakceptowano użytkownika');
+
     }
 
     /**
@@ -65,13 +72,13 @@ class EventController extends Controller
      */
     public function store(StoreEventRequest $request)
     {
-
         $fields = $request->validate([
             "title" => ['required', 'max:255'],
             "description" => ['required'],
             "slots" => ['required', 'int'],
             "image" => ['nullable', 'file', 'max:3072', 'mimes:jpeg,jpg,png,webp'],
-            "date" => ['required'],
+            "startDate" => ['required'],
+            "endDate" => ['required'],
             "game_id" => ['required'],
         ]);
 
@@ -102,9 +109,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-
-        $userStatus = $event->users()->withPivot('status')->find(Auth::id());
-
+        $userStatus = $event->userStatus(Auth::id());
 
         $event = Event::withCount(
             [
@@ -124,7 +129,7 @@ class EventController extends Controller
             [
                 'event' => $event,
                 'users' => $event->users()->where('status','>', 0)->get(),
-                'userStatus' => $userStatus ? $userStatus->getOriginal('pivot_status') : -1,
+                'userStatus' => $userStatus !== null ? $userStatus : -1,
                 'pendingUsers' => $event->users()->where('status','=', 0)->get()
             ]
         );
@@ -151,6 +156,15 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+
+        $auth = Gate::inspect('delete', $event);
+
+        if($auth->allowed()){
+            Event::find( $event->id)->delete();
+            return redirect()->route('events');
+        } else {
+            return redirect()->back()->with(['message' => $auth->message()]);
+        }
+
     }
 }
