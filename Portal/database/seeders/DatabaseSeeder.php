@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
 
         Game::create(['title' => 'Digital Combat Simulator: World','type' => 'military']);
         Game::create(['title' => 'Il-2 Sturmovik: Great Battles','type' => 'military']);

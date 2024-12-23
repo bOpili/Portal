@@ -52,4 +52,43 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Event::class);
     }
+
+    // Friend requests sent by the user
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(FriendRequest::class, 'sender_id');
+    }
+
+    // Friend requests received by the user
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(FriendRequest::class, 'receiver_id');
+    }
+
+    public function friends()
+    {
+        return $this->belongsToMany(User::class, 'friend_user', 'user_id', 'friend_id')->withTimestamps();
+    }
+
+    // Add a friend
+    public function addFriend(User $user)
+    {
+        if (!$this->isFriend($user)) {
+            $this->friends()->attach($user->id);
+        }
+    }
+
+    // Remove a friend
+    public function removeFriend(User $user)
+    {
+        $this->friends()->detach($user->id);
+    }
+
+    // Check if already friends
+    public function isFriend(User $user)
+    {
+        return $this->friends()->where('friend_id', $user->id)->exists();
+    }
+
+
 }

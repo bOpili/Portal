@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\FriendController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,13 @@ Route::middleware('auth')->group(function () {
     //---Users---//
     Route::get('users', [UserController::class, 'showUsers'])->middleware('verified')->name('users');
     Route::post('users', [UserController::class, 'findUser'])->name('users.findUser');
+
+    //---Friends---//
+    Route::post('/friend-requests/send/{id}', [FriendController::class, 'sendRequest'])->name('friend.sendRequest');
+    Route::post('/friend-requests/accept/{id}', [FriendController::class, 'acceptRequest'])->name('friend.accept');
+    Route::post('/friend-requests/reject/{id}', [FriendController::class, 'rejectRequest'])->name('friend.reject');
+    //Route::get('/friend-requests/pending', [FriendController::class, 'pendingRequests']);
+    //Route::get('/friends', [FriendController::class, 'friends']);
 
     //---Events---//
     Route::get('events', [EventController::class, 'index'])->middleware('verified')->name('events');

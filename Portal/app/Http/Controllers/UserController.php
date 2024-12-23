@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+
+use function PHPUnit\Framework\isEmpty;
 
 class UserController extends Controller
 {
@@ -17,17 +20,30 @@ class UserController extends Controller
 
         if ($request->hasFile('pfp')) {
             $pfp = Storage::disk('public')->put('ProfilePictures',$request->pfp);
-            DB::update('update users set profilepic = ? where id = ?',[$pfp, Auth::id()]);
+            //DB::update('update users set profilepic = ? where id = ?',[$pfp, Auth::id()]);
+            User::where(Auth::id())->update(['profilepic' => $pfp]);
         }
     }
 
     public function showUsers(){
-        $users = DB::table('users')->where('id','!=',Auth::user()->id)->get();
-        return Inertia::render('Auth/Users',['users'=>$users]);
+        $requests = User::findOrFail(Auth::id())->receivedFriendRequests()->where('status', 'pending')->with('sender:id,name,profilepic')->get();
+        if($requests->isEmpty()) {
+            $requests = null;
+        }
+        $users = User::findOrFail(Auth::id())->friends;
+        $friends = $users;
+        return Inertia::render('Auth/Users',['users'=>$users, 'requests' => $requests, 'friends' => $friends]);
     }
 
     public function findUser(Request $request){
-        $found = DB::table('users')->where('name','=',$request->Name)->get();
-        return Inertia::render('Auth/Users',['users'=>$found]);
+        $found = User::where('name','=',$request->Name)->get();
+        $friends = User::findOrFail(Auth::id())->friends;
+
+        if($found->isEmpty()){
+            return back();
+        }
+
+        return Inertia::render('Auth/Users',['users'=>$found, 'friends' => $friends]);
     }
+
 }
