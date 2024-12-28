@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/friend-requests/send/{id}', [FriendController::class, 'sendRequest'])->name('friend.sendRequest');
     Route::post('/friend-requests/accept/{id}', [FriendController::class, 'acceptRequest'])->name('friend.accept');
     Route::post('/friend-requests/reject/{id}', [FriendController::class, 'rejectRequest'])->name('friend.reject');
+    Route::post('/friend/remove/{id}', [FriendController::class, 'removeFriend'])->name('friend.remove');
     //Route::get('/friend-requests/pending', [FriendController::class, 'pendingRequests']);
     //Route::get('/friends', [FriendController::class, 'friends']);
 

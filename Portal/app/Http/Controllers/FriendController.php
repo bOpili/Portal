@@ -65,13 +65,12 @@ class FriendController extends Controller
         return back()->with('message','Friend request rejected');
     }
 
-    // // List pending friend requests for the user
-    // public function pendingRequests()
-    // {
-    //     $requests = User::findOrFail(Auth::id())->receivedFriendRequests()->where('status', 'pending')->get();
 
-    //     return response()->json($requests);
-    // }
+    public function removeFriend(Request $request, $friendId){
+        User::find(Auth::id())->friends()->detach($friendId);
+
+        return back()->with('message','User removed from fiend list');
+    }
 
 }
 

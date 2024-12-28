@@ -22,7 +22,6 @@ class EventController extends Controller
      */
     public function index()
     {
-
         $events = Event::latest()->withCount(['users'])->paginate(6);
         $events->load('game')->load('tags');
         return Inertia::render('Events/Events', ['events' => $events, 'joinMessage' => session('joinMessage')], );

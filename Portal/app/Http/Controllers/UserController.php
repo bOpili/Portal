@@ -20,8 +20,7 @@ class UserController extends Controller
 
         if ($request->hasFile('pfp')) {
             $pfp = Storage::disk('public')->put('ProfilePictures',$request->pfp);
-            //DB::update('update users set profilepic = ? where id = ?',[$pfp, Auth::id()]);
-            User::where(Auth::id())->update(['profilepic' => $pfp]);
+            User::find(Auth::id())->update(['profilepic' => $pfp]);
         }
     }
 

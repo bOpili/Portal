@@ -1,7 +1,11 @@
 <script setup>
 
-import EventDateSelector from './Components/EventDateSelector.vue';
+import EventCalendar from './Components/EventCalendar.vue';
 import PageFloatContainer from './Components/PageFloatContainer.vue';
+
+const props = defineProps({
+    events: Array,
+})
 </script>
 
 <template>
@@ -13,6 +17,7 @@ import PageFloatContainer from './Components/PageFloatContainer.vue';
         <PageFloatContainer>
             <p>{{ $page.props.flash.message ? ($page.props.flash.message + ' ' + $page.props.auth.user.name):('')}}</p>
             <h1>Strona główna</h1>
+            <EventCalendar :events="events ? events : []"></EventCalendar>
         </PageFloatContainer>
     </div>
 </template>

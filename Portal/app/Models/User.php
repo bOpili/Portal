@@ -50,7 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function events(): BelongsToMany
     {
-        return $this->belongsToMany(Event::class);
+        return $this->belongsToMany(Event::class)->withPivot('status');
     }
 
     // Friend requests sent by the user

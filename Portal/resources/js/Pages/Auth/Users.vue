@@ -5,12 +5,17 @@ import ConfirmButton from '../Components/ConfirmButton.vue';
 import FilterInput from '../Components/FilterInput.vue';
 import PageFloatContainer from '../Components/PageFloatContainer.vue';
 import HorizontalSeparator from '../Components/HorizontalSeparator.vue';
+import PopupMessage from '../Components/PopupMessage.vue';
 
 const form = useForm({
     Name: ""
 })
 
 const requestSend = useForm({
+    id: null
+})
+
+const friendRemove = useForm({
     id: null
 })
 
@@ -34,7 +39,13 @@ const rejectRequest = (id) => {
     requestSend.post(route('friend.reject',id));
 }
 
-console.log(props.friends)
+const removeFriend = (id) => {
+    form.post(route('friend.remove', id));
+}
+
+const resetMessage = () => {
+    location.reload();
+};
 
 </script>
 
@@ -73,13 +84,21 @@ console.log(props.friends)
                         :src="'storage/' + user.profilepic" alt="Current user profile picture" /></td>
                 <td>{{ user.name }}</td>
                 <td>
-            <tr><button @click.prevent="sendRequest(user.id)" v-if="!props.friends.some(e => e.id === user.id)">
+            <tr><button @click.prevent="sendRequest(user.id)" v-if="!props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"
+                class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
                     Send Friend Request
                 </button>
+                <button @click.prevent="removeFriend(user.id)" v-else-if="props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"
+                    class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
+                    Remove friend
+                </button>
+                <p v-else-if="user.id == $page.props.auth.user.id">It's you</p>
             </tr>
             </td>
             </tr>
         </table>
+
     </PageFloatContainer>
+    <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message"></PopupMessage>
 
 </template>
