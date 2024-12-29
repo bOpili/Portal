@@ -30,13 +30,13 @@ const submit = () => {
 }
 
 const sendRequest = (id) => {
-    requestSend.post(route('friend.sendRequest',id));
+    requestSend.post(route('friend.sendRequest', id));
 }
 const acceptRequest = (id) => {
-    requestSend.post(route('friend.accept',id));
+    requestSend.post(route('friend.accept', id));
 }
 const rejectRequest = (id) => {
-    requestSend.post(route('friend.reject',id));
+    requestSend.post(route('friend.reject', id));
 }
 
 const removeFriend = (id) => {
@@ -83,22 +83,19 @@ const resetMessage = () => {
                 <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
                         :src="'storage/' + user.profilepic" alt="Current user profile picture" /></td>
                 <td>{{ user.name }}</td>
-                <td>
-            <tr><button @click.prevent="sendRequest(user.id)" v-if="!props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"
-                class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
+                <td v-if="!props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button @click.prevent="sendRequest(user.id)"
+                    class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
                     Send Friend Request
-                </button>
-                <button @click.prevent="removeFriend(user.id)" v-else-if="props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"
+                </button></td>
+                <td v-else-if="props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button @click.prevent="removeFriend(user.id)"
                     class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
                     Remove friend
-                </button>
-                <p v-else-if="user.id == $page.props.auth.user.id">It's you</p>
-            </tr>
-            </td>
+                </button></td>
+                <td v-else-if="user.id == $page.props.auth.user.id">It's you</td>
             </tr>
         </table>
-
     </PageFloatContainer>
-    <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message"></PopupMessage>
+    <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message">
+    </PopupMessage>
 
 </template>

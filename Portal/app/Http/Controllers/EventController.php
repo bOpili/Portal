@@ -7,6 +7,7 @@ use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Models\Game;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class EventController extends Controller
 
     public function join(Request $request)
     {
-
+        $user = User::find(Auth::id());
         $event = Event::findOrFail($request->eventId);
 
         if ($event->users->find(Auth::id())) {
@@ -39,23 +40,34 @@ class EventController extends Controller
             return back()->with('message', 'Brak wolnych miejsc');
         }
 
+        // Check if the user has overlapping events
+        $overlappingEvent = $user->events()
+            ->where(function ($query) use ($event) {
+                $query->where('startDate', '<', $event->endDate)
+                    ->where('endDate', '>', $event->startDate);
+            })
+            ->first();
+
+        if ($overlappingEvent) {
+            return back()->with('message', "You are already participating in \"" . $overlappingEvent->title . "\" during this time.");
+        }
+
         $event->users()->attach(Auth::id());
 
         return back()->with('message', 'Dołączono do wydarzenia');
     }
 
-    public function accept(Request $request)  {
+    public function accept(Request $request)
+    {
         $event = Event::findOrFail($request->eventId);
 
-        if($event->users()->withPivot('status')->where('status', '>', 0)->count() <= $event->slots){
-            $event->users()->where('user_id',$request->userId)->update(['status' => 1]);
+        if ($event->users()->withPivot('status')->where('status', '>', 0)->count() <= $event->slots) {
+            $event->users()->where('user_id', $request->userId)->update(['status' => 1]);
             return back()->with('message', 'User accepted');
-        } else{
-            $event->users()->where('user_id',$request->userId)->update(['status' => -1]);
+        } else {
+            $event->users()->where('user_id', $request->userId)->update(['status' => -1]);
             return back()->with('message', 'No more empty slots for this user');
         }
-
-
     }
 
     /**
@@ -91,7 +103,7 @@ class EventController extends Controller
 
         $event = $request->user()->events()->create($fields);
 
-        foreach($request->tags as $tag){
+        foreach ($request->tags as $tag) {
 
             $event->tags()->attach($tag['id']);
         }
@@ -113,9 +125,11 @@ class EventController extends Controller
         $event = Event::withCount(
             [
                 'users' => function ($query) {
-                    $query->where('status', '>', 0); },
+                    $query->where('status', '>', 0);
+                },
                 'users as users_awaiting' => function ($query) {
-                    $query->where('status', 0); }
+                    $query->where('status', 0);
+                }
             ]
         )->where('id', $event->id)->first();
 
@@ -127,9 +141,9 @@ class EventController extends Controller
             'Events/EventDetails',
             [
                 'event' => $event,
-                'users' => $event->users()->where('status','>', 0)->get(),
+                'users' => $event->users()->where('status', '>', 0)->get(),
                 'userStatus' => $userStatus !== null ? $userStatus : -1,
-                'pendingUsers' => $event->users()->where('status','=', 0)->get()
+                'pendingUsers' => $event->users()->where('status', '=', 0)->get()
             ]
         );
     }
@@ -158,8 +172,8 @@ class EventController extends Controller
 
         $auth = Gate::inspect('delete', $event);
 
-        if($auth->allowed()){
-            Event::find( $event->id)->delete();
+        if ($auth->allowed()) {
+            Event::find($event->id)->delete();
             return redirect()->route('events');
         } else {
             return redirect()->back()->with(['message' => $auth->message()]);

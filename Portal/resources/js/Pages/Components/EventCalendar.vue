@@ -1,6 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue';
 import moment from 'moment';
+import { useForm } from '@inertiajs/vue3';
+import { route } from '../../../../vendor/tightenco/ziggy/src/js';
 
 moment.updateLocale('en', {
     week: {
@@ -22,9 +24,14 @@ const props = defineProps({
     },
 });
 
+const goToEvent = (eventId) => {
+    location.href(route('event.show', eventId))
+}
+
 const dayHeaders = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const momentEvents = props.events.map(e => ({
+    id: e.id,
     title: e.title,
     startDate: moment(e.startDate),
     endDate: moment(e.endDate),
@@ -150,17 +157,18 @@ const filterEventsForDay = (day) => {
                     </div>
 
                     <!-- Events -->
-                    <div v-for="event in filterEventsForDay(day)" :key="event.start"
-                        :style="{
+                    <Link v-for="event in filterEventsForDay(day)" :key="event.start"
+                        :href="route('event.show', event.id)" :style="{
                             top: `${calculateTop(event)}px`,
                             height: `${calculateHeight(event)}px`,
                         }"
                         class="absolute bg-orange-500 text-white rounded-md w-full select-none text-center shadow-lg">
-                        <div class="flex flex-col content-around">
-                            <div>{{ event.title }}</div>
-                            <div>{{ moment(event.startDate).format('HH:mm') }} - {{ moment(event.endDate).format('HH:mm') }}</div>
+                    <div class="flex flex-col content-around">
+                        <div>{{ event.title }}</div>
+                        <div>{{ moment(event.startDate).format('HH:mm') }} - {{ moment(event.endDate).format('HH:mm') }}
                         </div>
                     </div>
+                    </Link>
                 </div>
             </div>
         </div>

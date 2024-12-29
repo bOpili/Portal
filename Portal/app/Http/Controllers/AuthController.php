@@ -36,10 +36,10 @@ class AuthController extends Controller
         // Send verification mail
         event(new Registered($user));
 
-        $message = `Welcome to my inżynierka $user->name, na Twój adres mailowy został wysłany link weryfikacyjny`;
+        // $message = "Welcome to my inżynierka " . $user->name . ", na Twój adres mailowy został wysłany link weryfikacyjny";
 
         // Redirect
-        return redirect()->route('home')->with('message', $message);
+        return redirect()->route('home')->with('message', "Welcome to my inżynierka " . $user->name . ", na Twój adres mailowy został wysłany link weryfikacyjny");
     }
 
     public function login(Request $request){
