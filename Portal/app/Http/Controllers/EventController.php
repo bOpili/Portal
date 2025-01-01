@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Models\Game;
+use App\Models\Invitation;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -179,5 +180,43 @@ class EventController extends Controller
             return redirect()->back()->with(['message' => $auth->message()]);
         }
 
+    }
+
+    public function sendInvitations(Request $request, $eventId)
+    {
+        $user = User::findOrFail(Auth::id()); // Get the authenticated user
+        $event = Event::findOrFail($eventId);
+
+        // Ensure the user is the event creator
+        $auth = Gate::inspect('invite', $event);
+
+        if (!($auth->allowed())) {
+            return back()->with(['message' => $auth->message()]);
+        }
+
+        // Get friend IDs to invite from the request
+        //$friendIds = collect($request->input('friend_ids'));
+        // $friendIds = $user->friends();
+
+        // Validate that the invited users are friends of the current user
+        // $friends = $user->friends()->whereIn('id', $friendIds)->get();
+        $friends = $user->friends();
+
+        // Prepare invitations using collections
+        $invitations = $friends->map(function ($friend) use ($event, $user) {
+            return [
+                'event_id' => $event->id,
+                'sender_id' => $user->id,
+                'receiver_id' => $friend->id,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        });
+
+        // Insert invitations into the database
+        Invitation::insert($invitations->toArray());
+
+        return back()->with('message','Invitations sent successfully.');
     }
 }

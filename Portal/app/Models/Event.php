@@ -49,4 +49,8 @@ class Event extends Model
         return $this->belongsToMany(Tag::class);
     }
 
+    public function invitations(){
+        return $this->hasMany(Invitation::class);
+    }
+
 }

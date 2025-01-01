@@ -268,7 +268,7 @@ const endDragging = () => {
                 {{ header }}
             </div>
             <button v-for="(day, index) in daysInMonth" :key="index"
-                :class="['p-2 rounded-lg w-11  mb-1 text-center', day.isSame(currentMonth, 'month') ? 'hover:shadow-lg hover:dark:bg-orange-700 hover:bg-orange-500' : 'text-zinc-400 dark:text-black', day.isSame(today, 'day') ? 'font-bold ring-1 ring-orange-500 bg-orange-500 bg-opacity-25' : '']"
+                :class="['p-2 rounded-lg w-11  mb-1 text-center', day.isSame(currentMonth, 'month') ? 'hover:shadow-lg hover:dark:bg-orange-700 hover:bg-orange-500' : 'text-zinc-400 dark:text-black', (day.isSame(today, 'day') && day.isSame(currentMonth, 'month')) ? 'font-bold ring-1 ring-orange-500 bg-orange-500 bg-opacity-25' : '']"
                 @click="day.isSame(currentMonth, 'month') ? goToWeekView(day) : ''">
                 <span v-if="day.isSame(currentMonth, 'month')">{{ day.format('D') }}</span>
             </button>

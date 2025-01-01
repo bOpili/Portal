@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import moment from 'moment';
-import { useForm } from '@inertiajs/vue3';
 import { route } from '../../../../vendor/tightenco/ziggy/src/js';
 
 moment.updateLocale('en', {
@@ -136,11 +135,12 @@ const filterEventsForDay = (day) => {
                 {{ header }}
             </div>
             <button v-for="(day, index) in daysInMonth" :key="index"
-                :class="['p-2 rounded-lg w-11  mb-1 text-center', day.isSame(currentMonth, 'month') ? 'hover:shadow-lg hover:dark:bg-orange-700 hover:bg-orange-500' : 'text-zinc-400 dark:text-black', day.isSame(today, 'day') ? 'font-bold ring-1 ring-orange-500 bg-orange-500 bg-opacity-25' : '']"
-                @click="goToWeekView(day)">
-                <span v-if="day.isSame(currentMonth, 'month')">{{ day.format('D') }}</span>
-                <div class="text-xs mt-1 text-orange-600" v-if="filterEventsForDay(day).length > 0">
-                    {{ filterEventsForDay(day).length }}
+                :class="['p-2 rounded-lg w-11  mb-1 text-center', day.isSame(currentMonth, 'month') ? 'hover:shadow-lg hover:dark:bg-orange-700 hover:bg-orange-500' : 'text-zinc-400 dark:text-black', (day.isSame(today, 'day') && day.isSame(currentMonth, 'month')) ? 'font-bold ring-1 ring-orange-500 bg-orange-500 bg-opacity-25' : '']"
+                @click="day.isSame(currentMonth, 'month') ? goToWeekView(day) : ''">
+                <div v-if="day.isSame(currentMonth, 'month')">{{ day.format('D') }}
+                    <div class="text-xs mt-1 text-orange-600" v-if="filterEventsForDay(day).length > 0">
+                        {{ filterEventsForDay(day).length }}
+                    </div>
                 </div>
             </button>
         </div>

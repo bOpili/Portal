@@ -90,5 +90,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->friends()->where('friend_id', $user->id)->exists();
     }
 
+    public function sentInvitations()
+    {
+        return $this->hasMany(Invitation::class, 'sender_id');
+    }
+
+    public function receivedInvitations()
+    {
+        return $this->hasMany(Invitation::class, 'receiver_id');
+    }
 
 }
