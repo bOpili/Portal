@@ -14,20 +14,20 @@ class InvitationController extends Controller
         $invitation = invitation::findOrFail($invitationId);
 
         // Ensure the receiver is the authenticated user
-        if ($invitation->receiver_id !== auth()->id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($invitation->receiver_id !== Auth::id()) {
+            return back(403)->with('message', 'Unauthorized');
         }
 
         // Validate the status
         $status = $request->input('status');
         if (!in_array($status, ['accepted', 'declined'])) {
-            return response()->json(['message' => 'Invalid status.'], 422);
+            return back(422)->with('message', 'Invalid status.');
         }
 
         // Update the status using collections
         $invitation->update(['status' => $status]);
 
-        return response()->json(['message' => 'Invitation response updated.']);
+        return back()->with('message', 'Invitation response updated.');
     }
 
     public function getReceivedInvitations()

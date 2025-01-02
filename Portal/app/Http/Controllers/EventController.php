@@ -136,15 +136,14 @@ class EventController extends Controller
 
         $event->load('game')->load('tags');
 
-
-
         return Inertia::render(
             'Events/EventDetails',
             [
                 'event' => $event,
-                'users' => $event->users()->where('status', '>', 0)->get(),
+                'users' => $event->users()->where('status', '>', 0)->select('profilepic','name')->get(),
                 'userStatus' => $userStatus !== null ? $userStatus : -1,
-                'pendingUsers' => $event->users()->where('status', '=', 0)->get()
+                'pendingUsers' => $event->users()->where('status', '=', 0)->select('profilepic','name')->get(),
+                'friends' => User::findOrFail(Auth::id())->friends()->select('users.id','profilepic','name')->get(),
             ]
         );
     }
@@ -182,10 +181,11 @@ class EventController extends Controller
 
     }
 
-    public function sendInvitations(Request $request, $eventId)
+    public function sendInvitations(Request $request)
     {
+
         $user = User::findOrFail(Auth::id()); // Get the authenticated user
-        $event = Event::findOrFail($eventId);
+        $event = Event::findOrFail($request->eventId);
 
         // Ensure the user is the event creator
         $auth = Gate::inspect('invite', $event);
@@ -194,29 +194,30 @@ class EventController extends Controller
             return back()->with(['message' => $auth->message()]);
         }
 
+        if(!Invitation::where('receiver_id','=',$request->friendId)->where('event_id','=',$event->id)->where('status','=','pending')->get()->isEmpty()){
+            return back()->withErrors(['msg' => 'User already invited']);
+        }
+
         // Get friend IDs to invite from the request
         //$friendIds = collect($request->input('friend_ids'));
         // $friendIds = $user->friends();
 
         // Validate that the invited users are friends of the current user
         // $friends = $user->friends()->whereIn('id', $friendIds)->get();
-        $friends = $user->friends();
 
         // Prepare invitations using collections
-        $invitations = $friends->map(function ($friend) use ($event, $user) {
-            return [
-                'event_id' => $event->id,
+        $invitation =
+            [   'event_id' => $event->id,
                 'sender_id' => $user->id,
-                'receiver_id' => $friend->id,
+                'receiver_id' => $request->friendId,
                 'status' => 'pending',
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
-        });
 
         // Insert invitations into the database
-        Invitation::insert($invitations->toArray());
+        Invitation::insert($invitation);
 
-        return back()->with('message','Invitations sent successfully.');
+        return back();
     }
 }

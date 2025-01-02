@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\UserController;
+use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::get('events', [EventController::class, 'index'])->middleware('verified')->name('events');
     Route::post('events/join', [EventController::class, 'join'])->middleware('verified')->name('event.join');
     Route::post('events/accept', [EventController::class, 'accept'])->middleware('verified')->name('event.accept');
+    Route::post('event/invite',[EventController::class, 'sendInvitations'])->middleware('verified')->name('event.invite');
     Route::resource('event',EventController::class)->except('index');
 });
 

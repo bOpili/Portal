@@ -5,12 +5,15 @@ import HorizontalSeparator from '../Components/HorizontalSeparator.vue';
 import PageFloatContainer from '../Components/PageFloatContainer.vue';
 import moment from 'moment';
 import PopupMessage from '../Components/PopupMessage.vue';
+import { ref } from 'vue';
 
+var friendsListVis = ref(false);
 
 const props = defineProps({
     event: Object,
     users: Array,
     pendingUsers: Array,
+    friends: Array,
     userStatus: Number,
     joinMessage: String,
 })
@@ -26,6 +29,11 @@ const acceptForm = useForm({
     userId: null
 })
 
+const inviteForm = useForm({
+    eventId: props.event.id,
+    friendId: null
+})
+
 const formatDate = (date) => {
     return moment(String(date)).format('hh:mm DD.MM.YYYY');
 }
@@ -38,9 +46,22 @@ const deleteEvent = () => {
     form.delete(route('event.destroy', props.event))
 }
 
+const showFriendsList = () => {
+    friendsListVis.value = true;
+}
+
+const closeFriendsList = () => {
+    friendsListVis.value = false;
+}
+
 const accept = (userId) => {
     acceptForm.userId = userId;
     acceptForm.post(route('event.accept'))
+}
+
+const handleInvite = (friendId) => {
+    inviteForm.friendId = friendId;
+    inviteForm.post(route('event.invite'));
 }
 
 const resetMessage = () => {
@@ -59,7 +80,8 @@ const resetMessage = () => {
     <PageFloatContainer>
         <div class="grid grid-cols-2 space-y-4">
             <h1 class="self-end text-2xl font-bold">{{ event.title }}</h1>
-            <h1 class="justify-self-end">Data wydarzenia: {{ formatDate(event.startDate) }} - {{ formatDate(event.endDate) }}</h1>
+            <h1 class="justify-self-end">Data wydarzenia: {{ formatDate(event.startDate) }} - {{
+                formatDate(event.endDate) }}</h1>
             <HorizontalSeparator class="col-span-2"></HorizontalSeparator>
             <img v-if="event.image" :src="'/storage/' + event.image" alt="Event Image"
                 class="object-cover rounded justify-self-center col-span-2 w-1/3" />
@@ -86,7 +108,7 @@ const resetMessage = () => {
             <div v-else-if="userStatus == 0" class="mt-4 justify-self-end">
                 <p>Host musi zaakceptować twoją prośbę o dołączenie</p>
             </div>
-            <div v-else-if="userStatus == 2">
+            <div v-else-if="userStatus == 2" class="grid grid-cols-2">
                 <form @submit.prevent="deleteEvent">
                     <ConfirmButton>Delete this event</ConfirmButton>
                 </form>
@@ -108,6 +130,13 @@ const resetMessage = () => {
                     <td v-if="index == 0">Host</td>
                     <td v-else>Uczestnik</td>
                 </tr>
+                <tr>
+                    <td class="justify-items-center" colspan="3">
+                        <div>
+                            <ConfirmButton @click.prevent="showFriendsList">Invite Friends</ConfirmButton>
+                        </div>
+                    </td>
+                </tr>
             </table>
             <table v-if="userStatus == 2" class="table-auto border-separate border-spacing-4">
                 <tr v-for="(user, index) in props.pendingUsers">
@@ -124,9 +153,106 @@ const resetMessage = () => {
 
             <PopupMessage @closed="resetMessage" v-if="$page.props.flash.message" :message="$page.props.flash.message">
             </PopupMessage>
+
+            <!-- Popup window -->
+            <div v-if="friendsListVis" class="popup-backdrop">
+                <PageFloatContainer class="w-96 min-w-56 z-0">
+                    <div class="popup-header">
+                        <h3 class="popup-title">User List</h3>
+                        <button @click="closeFriendsList" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="">
+                        <ul>
+                            <li v-for="friend in friends" :key="friend.id" class="user-item">
+                                <span><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
+                                        :src="'/storage/' + friend.profilepic"
+                                        alt="Current user profile picture" /></span>
+                                <span>{{ friend.name }}</span>
+                                <form @submit.prevent="handleInvite(friend.id)">
+                                    <ConfirmButton>
+                                        Invite
+                                    </ConfirmButton>
+                                </form>
+                            </li>
+                        </ul>
+                        <p v-show="inviteForm.wasSuccessful" class="">Invite sent</p>
+                        <p v-for="error in inviteForm.errors" class="text-red-500">{{ error }}</p>
+                    </div>
+                </PageFloatContainer>
+            </div>
         </div>
 
     </PageFloatContainer>
 
 
 </template>
+
+<style scoped>
+/* Backdrop for popup */
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+}
+
+/* Popup content container */
+.popup-content {
+    background: rgb(249 115 22);
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header section */
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Close button */
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* User item styling */
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.btn {
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+</style>

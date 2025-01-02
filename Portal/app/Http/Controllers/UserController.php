@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use PHPUnit\Framework\MockObject\Invocation;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -26,12 +27,18 @@ class UserController extends Controller
 
     public function showUsers(){
         $requests = User::findOrFail(Auth::id())->receivedFriendRequests()->where('status', 'pending')->with('sender:id,name,profilepic')->get();
+        $invites = User::findOrFail(Auth::id())->receivedInvitations()->where('status','pending')->with('sender:id,name,profilepic')->with('event:id,title')->get();
+
         if($requests->isEmpty()) {
             $requests = null;
         }
+        if($invites->isEmpty()) {
+            $invites = null;
+        }
+
         $users = User::findOrFail(Auth::id())->friends;
         $friends = $users;
-        return Inertia::render('Auth/Users',['users'=>$users, 'requests' => $requests, 'friends' => $friends]);
+        return Inertia::render('Auth/Users',['users'=>$users, 'requests' => $requests, 'friends' => $friends, 'invites' => $invites]);
     }
 
     public function findUser(Request $request){

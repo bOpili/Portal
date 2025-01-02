@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\FriendRequest;
+use App\Models\Invitation;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,12 +39,13 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             // Lazily...
-            'auth.user' => fn () => $request->user()
-                ? $request->user()->only('id', 'name','profilepic')
+            'auth.user' => fn() => $request->user()
+                ? $request->user()->only('id', 'name', 'profilepic')
                 : null,
             'flash' => [
-                'message' => fn () => $request->session()->get('message')
+                'message' => fn() => $request->session()->get('message')
             ],
+            'notificationNumber' => fn() => $request->user() ? Invitation::where('status', 'pending')->where('receiver_id', $request->user()->id)->count() + FriendRequest::where('status', 'pending')->where('receiver_id', $request->user()->id)->count() : 0,
         ]);
     }
 

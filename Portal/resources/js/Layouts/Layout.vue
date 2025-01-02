@@ -5,6 +5,20 @@ import { route } from '../../../vendor/tightenco/ziggy/src/js';
 import { switchTheme } from '../theme';
 import NavButton from '../Pages/Components/NavButton.vue';
 import NavIcon from '../Pages/Components/NavIcon.vue';
+import { ref } from 'vue';
+
+var theme = ref("dark");
+
+const handleThemeSwitch = () => {
+    if(theme.value == 'light'){
+        theme.value = 'dark';
+    } else{
+        theme.value = 'light';
+    }
+    switchTheme();
+
+}
+
 
 </script>
 
@@ -18,9 +32,10 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
             <nav class="flex flex-wrap items-center justify-between p-2 space-x-5">
                 <div class="flex flex-wrap space-x-6">
                     <NavButton routeName="home" pageComp="Home">Strona główna</NavButton>
-                    <button @click="switchTheme"
+                    <button @click="handleThemeSwitch"
                         class="m-2 text-center ring-1 ring-amber-800 w-11 p-2 rounded-full shadow-lg hover:bg-orange-800 hover:ring-amber-600">
-                        <i class="fa-solid fa-moon"></i>
+                        <i v-if="theme == 'light'" class="fa-solid fa-moon"></i>
+                        <i v-else class="fa-solid fa-sun"></i>
                     </button>
                 </div>
                 <div class="flex flex-wrap space-x-6">
@@ -33,6 +48,7 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
                     </Link>
                     <NavIcon routeName="users">
                         <i class="fa-solid fa-users"></i>
+                        <span v-show="$page.props.notificationNumber != 0" class="notificationsNumber">{{ $page.props.notificationNumber }}</span>
                     </NavIcon>
                     <NavButton routeName="logout" method="post">Wyloguj</NavButton>
                 </div>
@@ -47,3 +63,24 @@ import NavIcon from '../Pages/Components/NavIcon.vue';
         </main>
     </div>
 </template>
+
+<style scoped>
+.notificationsNumber{
+    position: relative;
+    top: 10px;
+    right: 5px;
+    height: 1.30rem;
+    width: 1.30rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: rgb(255, 89, 0);
+    font-size: smaller;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
+}
+
+</style>
