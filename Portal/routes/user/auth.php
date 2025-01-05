@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\FriendController;
+use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\UserController;
 use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
@@ -13,8 +14,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
     //---Dashboard---//
-    Route::post('/dashboard',[UserController::class, 'changePfp'])->name('changePfp');
-    Route::inertia('/dashboard', 'Auth/Dashboard')->name('dashboard');
+    Route::post('/dashboard',[UserController::class, 'changePfp'])->middleware('verified')->name('changePfp');
+    Route::inertia('/dashboard', 'Auth/Dashboard')->middleware('verified')->name('dashboard');
 
     //---Email verification---//
     Route::get('/email/verify', [AuthController::class, 'notice'])->name('verification.notice');
@@ -37,7 +38,10 @@ Route::middleware('auth')->group(function () {
     Route::get('events', [EventController::class, 'index'])->middleware('verified')->name('events');
     Route::post('events/join', [EventController::class, 'join'])->middleware('verified')->name('event.join');
     Route::post('events/accept', [EventController::class, 'accept'])->middleware('verified')->name('event.accept');
-    Route::post('event/invite',[EventController::class, 'sendInvitations'])->middleware('verified')->name('event.invite');
+    Route::post('events/leave', [EventController::class, 'leave'])->middleware('verified')->name('event.leave');
+    Route::post('event/invite',[InvitationController::class, 'sendInvitations'])->middleware('verified')->name('event.invite');
+    Route::post('event/invite/accept',[InvitationController::class, 'acceptInvitation'])->middleware('verified')->name('event.invite.accept');
+    Route::post('event/invite/reject',[InvitationController::class, 'rejectInvitation'])->middleware('verified')->name('event.invite.reject');
     Route::resource('event',EventController::class)->except('index');
 });
 

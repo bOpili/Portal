@@ -19,6 +19,10 @@ const friendRemove = useForm({
     id: null
 })
 
+const inviteForm = useForm({
+    id: null
+})
+
 const props = defineProps({
     users: Array,
     requests: Array,
@@ -40,9 +44,21 @@ const rejectRequest = (id) => {
     requestSend.post(route('friend.reject', id));
 }
 
-const removeFriend = (id) => {
-    form.post(route('friend.remove', id));
+const acceptInvite = (id) => {
+    inviteForm.id = id;
+    inviteForm.post(route('event.invite.accept'));
 }
+const rejectInvite = (id) => {
+    inviteForm.id = id;
+    inviteForm.post(route('event.invite.reject'));
+}
+
+const removeFriend = (id) => {
+    inviteForm.id = id;
+    friendRemove.post(route('friend.remove', id));
+}
+
+
 
 const resetMessage = () => {
     location.reload();
@@ -69,23 +85,25 @@ const resetMessage = () => {
         <table class="table-auto border-separate border-spacing-4">
             <tr v-for="request in props.requests">
                 <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
-                        :src="'storage/' + request.sender.profilepic" alt="Request sneder profile picture" /></td>
+                        :src="'storage/' + request.sender.profilepic" alt="Request sender profile picture" /></td>
                 <td>{{ request.sender.name }}</td>
                 <td>
-                    <button @click="acceptRequest(request.id)">Accept</button>
-
+                    <ConfirmButton @click="acceptRequest(request.id)"><i class="fa-solid fa-check"></i></ConfirmButton>
                 </td>
-                <td><button @click="rejectRequest(request.id)">Reject</button></td>
+                <td>
+                    <ConfirmButton @click="rejectRequest(request.id)"><i class="fa-solid fa-xmark"></i></ConfirmButton>
+                </td>
             </tr>
             <tr v-for="invite in props.invites">
                 <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
-                        :src="'storage/' + invite.sender.profilepic" alt="Request sneder profile picture" /></td>
+                        :src="'storage/' + invite.sender.profilepic" alt="Invite sender profile picture" /></td>
                 <td>{{ invite.sender.name }} invited you to participate in <b><i>{{ invite.event.title }}</i></b></td>
                 <td>
-                    <button @click="acceptRequest(request.id)"><i class="fa-solid fa-check"></i></button>
-
+                    <ConfirmButton @click="acceptInvite(invite.id)"><i class="fa-solid fa-check"></i></ConfirmButton>
                 </td>
-                <td><button @click="rejectRequest(request.id)"><i class="fa-solid fa-xmark"></i></button></td>
+                <td>
+                    <ConfirmButton @click="rejectInvite(invite.id)"><i class="fa-solid fa-xmark"></i></ConfirmButton>
+                </td>
             </tr>
         </table>
         <HorizontalSeparator></HorizontalSeparator>
@@ -94,14 +112,16 @@ const resetMessage = () => {
                 <td><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
                         :src="'storage/' + user.profilepic" alt="Current user profile picture" /></td>
                 <td>{{ user.name }}</td>
-                <td v-if="!props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button @click.prevent="sendRequest(user.id)"
-                    class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
-                    <i class="fa-solid fa-user-plus"></i>
-                </button></td>
-                <td v-else-if="props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button @click.prevent="removeFriend(user.id)"
-                    class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
-                    <i class="fa-solid fa-user-xmark"></i>
-                </button></td>
+                <td v-if="!props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button
+                        @click.prevent="sendRequest(user.id)"
+                        class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </button></td>
+                <td v-else-if="props.friends.some(e => e.id === user.id) && user.id != $page.props.auth.user.id"><button
+                        @click.prevent="removeFriend(user.id)"
+                        class="text-white bg-orange-500 hover:bg-orange-700 dark:bg-orange-700 dark:hover:bg-orange-800 py-2 px-4 border border-orange-700  dark:border-orange-800 rounded">
+                        <i class="fa-solid fa-user-xmark"></i>
+                    </button></td>
                 <td v-else-if="user.id == $page.props.auth.user.id">It's you</td>
             </tr>
         </table>

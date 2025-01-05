@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Crypt;
 
 class Event extends Model
 {
@@ -26,6 +27,13 @@ class Event extends Model
         'startDate',
         'endDate',
         'game_id',
+        'ip',
+        'password',
+    ];
+
+    protected $hidden = [
+        'ip',
+        'password',
     ];
 
     public function users(): BelongsToMany
@@ -51,6 +59,26 @@ class Event extends Model
 
     public function invitations(){
         return $this->hasMany(Invitation::class);
+    }
+
+    public function setIpAttribute($value)
+    {
+        $this->attributes['ip'] = Crypt::encryptString($value);
+    }
+
+    public function getIpAttribute($value)
+    {
+        return Crypt::decryptString($value);
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['password'] = Crypt::encryptString($value);
+    }
+
+    public function getPasswordAttribute($value)
+    {
+        return Crypt::decryptString($value);
     }
 
 }

@@ -2,52 +2,76 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use App\Models\invitation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class InvitationController extends Controller
 {
-    public function respondToInvitation(Request $request, $invitationId)
+
+    public function sendInvitations(Request $request)
     {
-        $invitation = invitation::findOrFail($invitationId);
 
-        // Ensure the receiver is the authenticated user
-        if ($invitation->receiver_id !== Auth::id()) {
-            return back(403)->with('message', 'Unauthorized');
+        $user = User::findOrFail(Auth::id()); // Get the authenticated user
+        $event = Event::findOrFail($request->eventId);
+
+        // Ensure the user is the event creator
+        $auth = Gate::inspect('invite', $event);
+
+        if (!($auth->allowed())) {
+            return back()->with(['message' => $auth->message()]);
         }
 
-        // Validate the status
-        $status = $request->input('status');
-        if (!in_array($status, ['accepted', 'declined'])) {
-            return back(422)->with('message', 'Invalid status.');
+        if (!Invitation::where('receiver_id', '=', $request->friendId)->where('event_id', '=', $event->id)->where('status', '=', 'pending')->get()->isEmpty()) {
+            return back()->withErrors(['msg' => 'User already invited']);
         }
 
-        // Update the status using collections
-        $invitation->update(['status' => $status]);
+        if(!$event->users()->where('user_id',$request->friendId)->get()->isEmpty()){
+            return back()->withErrors(['msg' => 'User already participates']);
+        }
 
-        return back()->with('message', 'Invitation response updated.');
+        // Prepare invitations using collections
+        $invitation =
+            [
+                'event_id' => $event->id,
+                'sender_id' => $user->id,
+                'receiver_id' => $request->friendId,
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+        // Insert invitations into the database
+        Invitation::insert($invitation);
+
+        return back();
     }
 
-    public function getReceivedInvitations()
+    public function acceptInvitation(Request $request)
     {
-        $user = User::findOrFail(Auth::id());
+        $invitation = invitation::findOrFail($request->id);
+        $event = Event::findOrFail($invitation->event_id);
+        $user = User::findOrFail($invitation->receiver_id);
 
-        // Fetch received invitations with related event and sender using eager loading
-        $invitations = $user->receivedInvitations()
-            ->with(['event', 'sender'])
-            ->get()
-            ->map(function ($invitation) {
-                return [
-                    'id' => $invitation->id,
-                    'event_name' => $invitation->event->name,
-                    'event_date' => $invitation->event->date,
-                    'sender_name' => $invitation->sender->name,
-                    'status' => $invitation->status,
-                ];
-            });
-            dd($invitations);
-        return response()->json($invitations);
+        if ($event->users()->withPivot('status')->where('status', '>', 0)->count() < $event->slots) {
+            $event->users()->attach($user);
+            $event->users()->where('user_id', $user->id)->update(['status' => 1]);
+            invitation::findOrFail($invitation->id)->delete();
+        } else {
+            $event->users()->where('user_id', $user->id)->update(['status' => -1]);
+            invitation::findOrFail($invitation->id)->delete();
+            return back()->with('message', 'No empty slots');
+        }
+
+        return back();
+    }
+
+    public function rejectInvitation(Request $request)
+    {
+        invitation::findOrFail($request->id)->delete();
+        return back();
     }
 }

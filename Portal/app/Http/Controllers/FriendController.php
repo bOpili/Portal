@@ -42,11 +42,13 @@ class FriendController extends Controller
             return back()->with('message', 'Unauthorized');
         }
 
-        $friendRequest->update(['status' => 'accepted']);
+        // $friendRequest->update(['status' => 'accepted']);
 
         // Create friendship in the pivot table
         User::findOrFail(Auth::id())->friends()->attach($friendRequest->sender_id);
         $friendRequest->sender->friends()->attach(Auth::id());
+
+        $friendRequest->delete();
 
         return back()->with('message', 'Friend request accepted');
     }
@@ -60,7 +62,8 @@ class FriendController extends Controller
             return back()->with('message','Unauthorized');
         }
 
-        $friendRequest->update(['status' => 'rejected']);
+        // $friendRequest->update(['status' => 'rejected']);
+        $friendRequest->delete();
 
         return back()->with('message','Friend request rejected');
     }
@@ -68,6 +71,7 @@ class FriendController extends Controller
 
     public function removeFriend(Request $request, $friendId){
         User::find(Auth::id())->friends()->detach($friendId);
+        User::find($friendId)->friends()->detach(Auth::id());
 
         return back()->with('message','User removed from fiend list');
     }

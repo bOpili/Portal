@@ -11,6 +11,7 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
@@ -37,6 +38,8 @@ class EventController extends Controller
         if ($event->users->find(Auth::id())) {
             return back()->with('message', 'Jesteś już członkiem tego wydarzenia');
         }
+
+
         if ($event->users->count() >= $event->slots) {
             return back()->with('message', 'Brak wolnych miejsc');
         }
@@ -50,7 +53,7 @@ class EventController extends Controller
             ->first();
 
         if ($overlappingEvent) {
-            return back()->with('message', "You are already participating in \"" . $overlappingEvent->title . "\" during this time.");
+            return back()->with('message', "You are already participating in " . $overlappingEvent->title . " during this time.");
         }
 
         $event->users()->attach(Auth::id());
@@ -58,15 +61,25 @@ class EventController extends Controller
         return back()->with('message', 'Dołączono do wydarzenia');
     }
 
+
+    public function leave(Request $request)
+    {
+        $event = Event::findOrFail($request->eventId);
+
+        $event->users()->detach(Auth::id());
+
+        return back();
+    }
+
     public function accept(Request $request)
     {
         $event = Event::findOrFail($request->eventId);
 
-        if ($event->users()->withPivot('status')->where('status', '>', 0)->count() <= $event->slots) {
+        if ($event->users()->withPivot('status')->where('status', '>', 0)->count() < $event->slots) {
             $event->users()->where('user_id', $request->userId)->update(['status' => 1]);
             return back()->with('message', 'User accepted');
         } else {
-            $event->users()->where('user_id', $request->userId)->update(['status' => -1]);
+            $event->users()->where('user_id', $request->userId)->update(['status' => 0]);
             return back()->with('message', 'No more empty slots for this user');
         }
     }
@@ -92,6 +105,8 @@ class EventController extends Controller
             "startDate" => ['required'],
             "endDate" => ['required'],
             "game_id" => ['required'],
+            "ip" => ['required', 'ipv4'],
+            "password" => ['required'],
         ]);
 
 
@@ -136,11 +151,17 @@ class EventController extends Controller
 
         $event->load('game')->load('tags');
 
+        $canSeeJoinFields = Gate::inspect('viewJoinCredentials', $event);
+
+        if($canSeeJoinFields->allowed()){
+            $event = $event->makeVisible(['ip','password']);
+        }
+
         return Inertia::render(
             'Events/EventDetails',
             [
                 'event' => $event,
-                'users' => $event->users()->where('status', '>', 0)->select('profilepic','name')->get(),
+                'users' => $event->users()->where('status', '>', 0)->select('profilepic','name')->orderBy('status', 'DESC')->get(),
                 'userStatus' => $userStatus !== null ? $userStatus : -1,
                 'pendingUsers' => $event->users()->where('status', '=', 0)->select('profilepic','name')->get(),
                 'friends' => User::findOrFail(Auth::id())->friends()->select('users.id','profilepic','name')->get(),
@@ -179,45 +200,5 @@ class EventController extends Controller
             return redirect()->back()->with(['message' => $auth->message()]);
         }
 
-    }
-
-    public function sendInvitations(Request $request)
-    {
-
-        $user = User::findOrFail(Auth::id()); // Get the authenticated user
-        $event = Event::findOrFail($request->eventId);
-
-        // Ensure the user is the event creator
-        $auth = Gate::inspect('invite', $event);
-
-        if (!($auth->allowed())) {
-            return back()->with(['message' => $auth->message()]);
-        }
-
-        if(!Invitation::where('receiver_id','=',$request->friendId)->where('event_id','=',$event->id)->where('status','=','pending')->get()->isEmpty()){
-            return back()->withErrors(['msg' => 'User already invited']);
-        }
-
-        // Get friend IDs to invite from the request
-        //$friendIds = collect($request->input('friend_ids'));
-        // $friendIds = $user->friends();
-
-        // Validate that the invited users are friends of the current user
-        // $friends = $user->friends()->whereIn('id', $friendIds)->get();
-
-        // Prepare invitations using collections
-        $invitation =
-            [   'event_id' => $event->id,
-                'sender_id' => $user->id,
-                'receiver_id' => $request->friendId,
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-        // Insert invitations into the database
-        Invitation::insert($invitation);
-
-        return back();
     }
 }

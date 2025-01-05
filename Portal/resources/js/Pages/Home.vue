@@ -14,10 +14,12 @@ const props = defineProps({
         <meta head-key="description" name="description" content="Strona główna portalu"/>
     </Head>
     <div>
-        <PageFloatContainer>
-            <p>{{ $page.props.flash.message ? ($page.props.flash.message + ' ' + $page.props.auth.user.name):('')}}</p>
-            <h1>Strona główna</h1>
+        <PageFloatContainer v-if="$page.props.auth.user">
+            <p v-if="$page.props.flash.message">{{ $page.props.flash.message ? ($page.props.flash.message):('')}}</p>
             <EventCalendar :events="events ? events : []"></EventCalendar>
+        </PageFloatContainer>
+        <PageFloatContainer v-else>
+            <h1>Strona główna</h1>
         </PageFloatContainer>
     </div>
 </template>

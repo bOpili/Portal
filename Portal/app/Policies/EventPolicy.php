@@ -53,9 +53,16 @@ class EventPolicy
 
     public function invite(User $user, Event $event): Response
     {
-        return $event->userStatus($user->id) === 2
+        return $event->userStatus($user->id) > 0
             ? Response::allow()
-            : Response::deny('You are not the creator of this event');
+            : Response::deny('You are not allowed to invite others to this event');
+    }
+
+    public function viewJoinCredentials(User $user, Event $event): Response
+    {
+        return $event->userStatus($user->id) > 0
+            ? Response::allow()
+            : Response::deny('You are not allowed to view IP and Password assigned to this event');
     }
 
     /**

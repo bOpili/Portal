@@ -29,6 +29,11 @@ const acceptForm = useForm({
     userId: null
 })
 
+const leaveForm = useForm({
+    eventId: props.event.id,
+    userId: null
+})
+
 const inviteForm = useForm({
     eventId: props.event.id,
     friendId: null
@@ -39,13 +44,17 @@ const formatDate = (date) => {
 }
 
 const submit = () => {
-    form.post(route('event.join'))
+    form.post(route('event.join'), {preserveScroll: true})
 }
 
 const deleteEvent = () => {
-    form.delete(route('event.destroy', props.event))
+    form.delete(route('event.destroy', props.event), {preserveScroll: true})
 }
 
+const leaveEvent = (userId) => {
+    acceptForm.userId = userId;
+    acceptForm.post(route('event.leave'), {preserveScroll: true})
+}
 const showFriendsList = () => {
     friendsListVis.value = true;
 }
@@ -56,12 +65,12 @@ const closeFriendsList = () => {
 
 const accept = (userId) => {
     acceptForm.userId = userId;
-    acceptForm.post(route('event.accept'))
+    acceptForm.post(route('event.accept'), {preserveScroll: true})
 }
 
 const handleInvite = (friendId) => {
     inviteForm.friendId = friendId;
-    inviteForm.post(route('event.invite'));
+    inviteForm.post(route('event.invite'), {preserveScroll: true});
 }
 
 const resetMessage = () => {
@@ -99,11 +108,15 @@ const resetMessage = () => {
                 <strong>Gra:</strong> {{ event.game.title }}
             </p>
 
-            <p>
+            <p :class="event.ip ? 'col-span-2' : ''">
                 <strong>Sloty:</strong> {{ event.users_count + '/' + event.slots }}
             </p>
+            <p v-if="event.ip" class="col-span-2"><strong>Server ip:</strong> {{ event.ip }}</p>
+            <p v-if="event.password"><strong>Server password:</strong> {{ event.password }}</p>
             <div v-if="userStatus == 1" class="mt-4 justify-self-end">
-                <p>Jesteś już członkiem tego wydarzenia</p>
+                <form @submit.prevent="leaveEvent">
+                    <ConfirmButton>Leave</ConfirmButton>
+                </form>
             </div>
             <div v-else-if="userStatus == 0" class="mt-4 justify-self-end">
                 <p>Host musi zaakceptować twoją prośbę o dołączenie</p>
@@ -132,7 +145,7 @@ const resetMessage = () => {
                 </tr>
                 <tr>
                     <td class="justify-items-center" colspan="3">
-                        <div>
+                        <div v-if="userStatus > 0">
                             <ConfirmButton @click.prevent="showFriendsList">Invite Friends</ConfirmButton>
                         </div>
                     </td>
@@ -144,8 +157,8 @@ const resetMessage = () => {
                             :src="'/storage/' + user.profilepic" alt="Current user profile picture" /></td>
                     <td>{{ user.name }}</td>
                     <td>
-                        <form @submit.prevent="accept(user.id)">
-                            <ConfirmButton>Zaakceptuj</ConfirmButton>
+                        <form @submit.prevent="accept(user.pivot.user_id)">
+                            <ConfirmButton>Accept</ConfirmButton>
                         </form>
                     </td>
                 </tr>
@@ -158,10 +171,10 @@ const resetMessage = () => {
             <div v-if="friendsListVis" class="popup-backdrop">
                 <PageFloatContainer class="w-96 min-w-56 z-0">
                     <div class="popup-header">
-                        <h3 class="popup-title">User List</h3>
+                        <h3 class="popup-title">Friends List</h3>
                         <button @click="closeFriendsList" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <div class="">
+                    <div>
                         <ul>
                             <li v-for="friend in friends" :key="friend.id" class="user-item">
                                 <span><img class="object-fill ring-1 ring-amber-800 size-11 rounded-full shadow-lg "
